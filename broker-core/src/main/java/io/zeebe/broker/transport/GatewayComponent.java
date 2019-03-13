@@ -30,7 +30,7 @@ public class GatewayComponent implements Component {
     final EmbeddedGatewayCfg config = context.getBrokerConfiguration().getGateway();
     if (config.isEnable()) {
       try {
-        final Gateway gateway = new Gateway(config);
+        final Gateway gateway = new Gateway(config, context.getScheduler());
         gateway.start();
         context.setGatewayResourceReleasingDelegate(gateway::stop);
       } catch (final IOException e) {

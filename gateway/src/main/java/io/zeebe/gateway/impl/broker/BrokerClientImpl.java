@@ -43,30 +43,37 @@ import org.slf4j.Logger;
 public class BrokerClientImpl implements BrokerClient {
   public static final Logger LOG = Loggers.GATEWAY_LOGGER;
 
-  protected final ActorScheduler actorScheduler;
-  private final Dispatcher dataFrameReceiveBuffer;
-  protected final ClientTransport transport;
-  private final ClientTransport internalTransport;
-  private final BrokerRequestManager requestManager;
-  protected final BrokerTopologyManagerImpl topologyManager;
+  protected ActorScheduler actorScheduler;
+  private Dispatcher dataFrameReceiveBuffer;
+  protected ClientTransport transport;
+  private ClientTransport internalTransport;
+  private BrokerRequestManager requestManager;
+  protected BrokerTopologyManagerImpl topologyManager;
 
   protected boolean isClosed;
 
   public BrokerClientImpl(final GatewayCfg configuration) {
-    this(configuration, null);
+    this(configuration, (ActorClock) null);
   }
 
   public BrokerClientImpl(final GatewayCfg configuration, final ActorClock actorClock) {
-
-    this.actorScheduler =
+    final ActorScheduler scheduler =
         ActorScheduler.newActorScheduler()
             .setCpuBoundActorThreadCount(configuration.getThreads().getManagementThreads())
             .setIoBoundActorThreadCount(0)
             .setActorClock(actorClock)
             .setSchedulerName("gateway")
             .build();
-    this.actorScheduler.start();
+    scheduler.start();
+    init(configuration, scheduler);
+  }
 
+  public BrokerClientImpl(final GatewayCfg configuration, ActorScheduler actorScheduler) {
+    init(configuration, actorScheduler);
+  }
+
+  private void init(GatewayCfg configuration, ActorScheduler actorScheduler) {
+    this.actorScheduler = actorScheduler;
     final ByteValue transportBufferSize = configuration.getCluster().getTransportBuffer();
 
     dataFrameReceiveBuffer =

@@ -21,6 +21,7 @@ import io.grpc.netty.NettyServerBuilder;
 import io.zeebe.gateway.impl.broker.BrokerClient;
 import io.zeebe.gateway.impl.broker.BrokerClientImpl;
 import io.zeebe.gateway.impl.configuration.GatewayCfg;
+import io.zeebe.util.sched.ActorScheduler;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.function.Function;
@@ -43,12 +44,18 @@ public class Gateway {
 
   private final Function<GatewayCfg, ServerBuilder> serverBuilderFactory;
   private final GatewayCfg gatewayCfg;
+  private ActorScheduler sharedScheduler;
 
   private Server server;
   private BrokerClient brokerClient;
 
   public Gateway(GatewayCfg gatewayCfg) {
     this(gatewayCfg, DEFAULT_SERVER_BUILDER_FACTORY);
+  }
+
+  public Gateway(GatewayCfg gatewayCfg, ActorScheduler actorScheduler) {
+    this(gatewayCfg, DEFAULT_SERVER_BUILDER_FACTORY);
+    sharedScheduler = actorScheduler;
   }
 
   public Gateway(GatewayCfg gatewayCfg, Function<GatewayCfg, ServerBuilder> serverBuilderFactory) {
@@ -80,7 +87,9 @@ public class Gateway {
   }
 
   protected BrokerClient buildBrokerClient() {
-    return new BrokerClientImpl(gatewayCfg);
+    return sharedScheduler == null
+        ? new BrokerClientImpl(gatewayCfg)
+        : new BrokerClientImpl(gatewayCfg, sharedScheduler);
   }
 
   public void listenAndServe() throws InterruptedException, IOException {
