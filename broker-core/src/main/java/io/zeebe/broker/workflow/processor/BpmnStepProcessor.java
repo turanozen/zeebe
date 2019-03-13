@@ -27,7 +27,6 @@ import io.zeebe.broker.logstreams.state.ZeebeState;
 import io.zeebe.broker.workflow.model.element.ExecutableFlowElement;
 import io.zeebe.broker.workflow.model.element.ExecutableWorkflow;
 import io.zeebe.broker.workflow.state.DeployedWorkflow;
-import io.zeebe.broker.workflow.state.ElementInstance;
 import io.zeebe.broker.workflow.state.ElementInstanceState;
 import io.zeebe.broker.workflow.state.WorkflowEngineState;
 import io.zeebe.broker.workflow.state.WorkflowState;
@@ -96,7 +95,6 @@ public class BpmnStepProcessor implements TypedRecordProcessor<WorkflowInstanceR
           "Error while processing workflow. Workflow with " + workflowKey + " is not deployed");
     } else {
       populateElementInContext(deployedWorkflow);
-      populateElementInstancesInContext();
     }
   }
 
@@ -107,17 +105,5 @@ public class BpmnStepProcessor implements TypedRecordProcessor<WorkflowInstanceR
     final ExecutableWorkflow workflow = deployedWorkflow.getWorkflow();
     final ExecutableFlowElement flowElement = workflow.getElementById(currentElementId);
     context.setElement(flowElement);
-  }
-
-  private void populateElementInstancesInContext() {
-    final WorkflowInstanceRecord value = context.getValue();
-
-    final ElementInstance elementInstance =
-        elementInstanceState.getInstance(context.getRecord().getKey());
-    final ElementInstance flowScopeInstance =
-        elementInstanceState.getInstance(value.getFlowScopeKey());
-
-    context.setElementInstance(elementInstance);
-    context.setFlowScopeInstance(flowScopeInstance);
   }
 }
