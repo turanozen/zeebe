@@ -88,13 +88,20 @@ public class WorkStealingGroup {
       final int runnerId = i % numOfThreads;
 
       if (runnerId != currentThread.getRunnerId()) {
-        final ActorTask stolenActor = taskQueues[runnerId].trySteal();
 
-        if (stolenActor != null) {
-          currentThread.getMetrics().incrementTaskStealCount();
-          return stolenActor;
+        final ActorTaskQueue taskQueue = taskQueues[runnerId];
+        final long count = taskQueue.getCount();
+        final long toSteal = count / 2;
+        for (int idx = 0; idx < toSteal; idx++) {
+
+          final ActorTask stolenActor = taskQueue.trySteal();
+          if (stolenActor != null) {
+            taskQueues[currentThread.getRunnerId()].append(stolenActor);
+            currentThread.getMetrics().incrementTaskStealCount();
+          }
         }
       }
+      return taskQueues[currentThread.getRunnerId()].pop();
     }
 
     return null;

@@ -17,6 +17,7 @@ package io.zeebe.util.sched;
 
 import static org.agrona.UnsafeAccess.UNSAFE;
 
+import java.util.concurrent.atomic.AtomicLong;
 import org.agrona.concurrent.ManyToOneConcurrentLinkedQueue;
 
 @SuppressWarnings("restriction")
@@ -107,12 +108,15 @@ public class ActorTaskQueue extends ActorTaskQueueHead {
     UNSAFE.putOrderedObject(this, TAIL_OFFSET, empty);
   }
 
+  private final AtomicLong count = new AtomicLong(0);
+
   /** appends a task at the end (tail) of the list */
   public void append(final ActorTask task) {
     // TODO: make garbage free again
     final ActorTaskQueueNode tail = new ActorTaskQueueNode();
     tail.task = task;
     tail.stateCount = task.getStateCount();
+    count.incrementAndGet();
     final ActorTaskQueueNode previousTail = swapTail(tail);
     previousTail.nextOrdered(tail);
     tail.prevOrdered(previousTail);
@@ -125,11 +129,13 @@ public class ActorTaskQueue extends ActorTaskQueueHead {
    * @return the actor which was stolen or null in case no actor is available
    */
   public ActorTask trySteal() {
+
     ActorTaskQueueNode node = this.tail;
 
     while (node != null && node != empty) {
       final ActorTask task = node.task;
       if (task.claim(node.stateCount)) {
+        count.decrementAndGet();
         return task;
       }
 
@@ -150,6 +156,7 @@ public class ActorTaskQueue extends ActorTaskQueueHead {
         final ActorTask t = node.task;
         if (t.claim(node.stateCount)) {
           task = t;
+          count.decrementAndGet();
           break;
         }
       }
@@ -201,5 +208,9 @@ public class ActorTaskQueue extends ActorTaskQueueHead {
   private boolean casTail(
       final ActorTaskQueueNode expectedNode, final ActorTaskQueueNode updateNode) {
     return UNSAFE.compareAndSwapObject(this, TAIL_OFFSET, expectedNode, updateNode);
+  }
+
+  public long getCount() {
+    return count.get();
   }
 }
