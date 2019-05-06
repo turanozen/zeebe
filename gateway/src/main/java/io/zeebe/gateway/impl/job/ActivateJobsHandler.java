@@ -23,6 +23,8 @@ import io.zeebe.gateway.impl.broker.BrokerClient;
 import io.zeebe.gateway.impl.broker.request.BrokerActivateJobsRequest;
 import io.zeebe.gateway.protocol.GatewayOuterClass.ActivateJobsRequest;
 import io.zeebe.gateway.protocol.GatewayOuterClass.ActivateJobsResponse;
+
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -102,8 +104,57 @@ public class ActivateJobsHandler {
     } else {
       // enough jobs activated or no more partitions left to check
       jobTypeToNextPartitionId.put(jobType, partitionIdIterator.getCurrentPartitionId());
-      responseObserver.onCompleted();
+
+      // TODO (saig0): register only for new jobs if no job is polled
+      if (remainingAmount > 0) {
+
+        // TODO (saig0): configure timeout by client
+        brokerClient
+            .getJobPollHandler()
+            .register(
+                jobType,
+                responseObserver,
+                partitionId -> {
+                  Loggers.GATEWAY_LOGGER.info("poll new jobs from partition: " + partitionId);
+
+                  sendActivateRequest(
+                      jobType, partitionId, remainingAmount, request, responseObserver);
+                },
+                Duration.ofSeconds(10));
+      } else {
+        responseObserver.onCompleted();
+      }
     }
+  }
+
+  private void sendActivateRequest(
+      String jobType,
+      int partitionId,
+      int remainingAmount,
+      BrokerActivateJobsRequest request,
+      StreamObserver<ActivateJobsResponse> responseObserver) {
+
+    request.setPartitionId(partitionId);
+    request.setMaxJobsToActivate(remainingAmount);
+    brokerClient.sendRequest(
+        request,
+        (key, response) -> {
+          final ActivateJobsResponse grpcResponse =
+              ResponseMapper.toActivateJobsResponse(key, response);
+
+          final int jobsCount = grpcResponse.getJobsCount();
+          if (jobsCount > 0) {
+            responseObserver.onNext(grpcResponse);
+          }
+
+          responseObserver.onCompleted();
+        },
+        error -> {
+          Loggers.GATEWAY_LOGGER.warn(
+              "Failed to activate jobs for type {} from partition {}", jobType, partitionId, error);
+
+          responseObserver.onCompleted();
+        });
   }
 
   private PartitionIdIterator partitionIdIteratorForType(String jobType, int partitionsCount) {

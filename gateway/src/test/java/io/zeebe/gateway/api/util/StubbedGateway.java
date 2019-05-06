@@ -18,6 +18,7 @@ package io.zeebe.gateway.api.util;
 import static io.zeebe.protocol.Protocol.START_PARTITION_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.atomix.cluster.messaging.ClusterCommunicationService;
 import io.grpc.ManagedChannel;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
@@ -34,6 +35,7 @@ import io.zeebe.gateway.impl.broker.cluster.BrokerTopologyManager;
 import io.zeebe.gateway.impl.broker.request.BrokerRequest;
 import io.zeebe.gateway.impl.broker.response.BrokerResponse;
 import io.zeebe.gateway.impl.configuration.GatewayCfg;
+import io.zeebe.gateway.impl.job.JobPollHandler;
 import io.zeebe.gateway.protocol.GatewayGrpc;
 import io.zeebe.gateway.protocol.GatewayGrpc.GatewayBlockingStub;
 import io.zeebe.util.sched.future.ActorFuture;
@@ -127,6 +129,11 @@ public class StubbedGateway extends Gateway {
     @Override
     public BrokerTopologyManager getTopologyManager() {
       return topologyManager;
+    }
+
+    @Override
+    public JobPollHandler getJobPollHandler() {
+      return null;
     }
   }
 

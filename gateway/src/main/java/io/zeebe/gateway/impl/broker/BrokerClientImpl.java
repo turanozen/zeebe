@@ -18,6 +18,7 @@ package io.zeebe.gateway.impl.broker;
 import io.atomix.cluster.AtomixCluster;
 import io.atomix.cluster.ClusterMembershipEvent;
 import io.atomix.cluster.ClusterMembershipEvent.Type;
+import io.atomix.cluster.messaging.ClusterCommunicationService;
 import io.zeebe.dispatcher.Dispatcher;
 import io.zeebe.dispatcher.Dispatchers;
 import io.zeebe.gateway.Loggers;
@@ -27,6 +28,7 @@ import io.zeebe.gateway.impl.broker.request.BrokerRequest;
 import io.zeebe.gateway.impl.broker.response.BrokerResponse;
 import io.zeebe.gateway.impl.configuration.ClusterCfg;
 import io.zeebe.gateway.impl.configuration.GatewayCfg;
+import io.zeebe.gateway.impl.job.JobPollHandler;
 import io.zeebe.transport.ClientTransport;
 import io.zeebe.transport.ClientTransportBuilder;
 import io.zeebe.transport.RemoteAddress;
@@ -52,7 +54,9 @@ public class BrokerClientImpl implements BrokerClient {
   protected final BrokerTopologyManagerImpl topologyManager;
   private final Dispatcher dataFrameReceiveBuffer;
   private final BrokerRequestManager requestManager;
+  private final AtomixCluster atomixCluster;
   protected boolean isClosed;
+  private JobPollHandler jobPollHandler;
 
   public BrokerClientImpl(final GatewayCfg configuration, final AtomixCluster atomixCluster) {
     this(configuration, atomixCluster, null);
@@ -81,6 +85,7 @@ public class BrokerClientImpl implements BrokerClient {
       final boolean ownsActorScheduler) {
     this.actorScheduler = actorScheduler;
     this.ownsActorScheduler = ownsActorScheduler;
+    this.atomixCluster = atomixCluster;
 
     if (ownsActorScheduler) {
       actorScheduler.start();
@@ -125,6 +130,9 @@ public class BrokerClientImpl implements BrokerClient {
             new RoundRobinDispatchStrategy(topologyManager),
             clusterCfg.getRequestTimeout());
     actorScheduler.submitActor(requestManager);
+
+    jobPollHandler = new JobPollHandler(atomixCluster.getCommunicationService());
+    actorScheduler.submitActor(jobPollHandler);
   }
 
   private void registerEndpoint(final int nodeId, final SocketAddress socketAddress) {
@@ -202,5 +210,9 @@ public class BrokerClientImpl implements BrokerClient {
 
   public ActorScheduler getScheduler() {
     return actorScheduler;
+  }
+
+  public JobPollHandler getJobPollHandler() {
+    return jobPollHandler;
   }
 }

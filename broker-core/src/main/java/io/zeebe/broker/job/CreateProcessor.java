@@ -17,22 +17,37 @@
  */
 package io.zeebe.broker.job;
 
+import io.atomix.cluster.messaging.ClusterCommunicationService;
+import io.zeebe.broker.Loggers;
 import io.zeebe.broker.logstreams.processor.CommandProcessor;
 import io.zeebe.broker.logstreams.processor.TypedRecord;
 import io.zeebe.protocol.impl.record.value.job.JobRecord;
 import io.zeebe.protocol.intent.JobIntent;
+import io.zeebe.util.buffer.BufferUtil;
 
 public class CreateProcessor implements CommandProcessor<JobRecord> {
 
   private final JobState state;
+  private final ClusterCommunicationService communicationService;
+  private final int partitionId;
 
-  public CreateProcessor(JobState state) {
+  public CreateProcessor(
+      JobState state, ClusterCommunicationService communicationService, int partitionId) {
     this.state = state;
+    this.communicationService = communicationService;
+    this.partitionId = partitionId;
   }
 
   @Override
   public void onCommand(TypedRecord<JobRecord> command, CommandControl<JobRecord> commandControl) {
     final long key = commandControl.accept(JobIntent.CREATED, command.getValue());
     state.create(key, command.getValue());
+
+    final String jobType = BufferUtil.bufferAsString(command.getValue().getType());
+    final String subject = "jobs-" + jobType;
+
+    Loggers.STREAM_PROCESSING.info("broadcast to " + subject);
+
+    communicationService.broadcastIncludeSelf(subject, partitionId);
   }
 }

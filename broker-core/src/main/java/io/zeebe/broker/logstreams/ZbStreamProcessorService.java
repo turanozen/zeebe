@@ -118,7 +118,7 @@ public class ZbStreamProcessorService implements Service<ZbStreamProcessorServic
         addWorkflowProcessors(zeebeState, typedProcessorBuilder);
     addDeploymentRelatedProcessorAndServices(partitionId, zeebeState, typedProcessorBuilder);
     addIncidentProcessors(zeebeState, stepProcessor, typedProcessorBuilder);
-    addJobProcessors(zeebeState, typedProcessorBuilder);
+    addJobProcessors(zeebeState, typedProcessorBuilder, partitionId);
     addMessageProcessors(zeebeState, typedProcessorBuilder);
 
     return typedProcessorBuilder.build();
@@ -183,8 +183,9 @@ public class ZbStreamProcessorService implements Service<ZbStreamProcessorServic
   }
 
   private void addJobProcessors(
-      ZeebeState zeebeState, TypedEventStreamProcessorBuilder typedProcessorBuilder) {
-    JobEventProcessors.addJobProcessors(typedProcessorBuilder, zeebeState);
+    ZeebeState zeebeState, TypedEventStreamProcessorBuilder typedProcessorBuilder, int partitionId) {
+
+    JobEventProcessors.addJobProcessors(typedProcessorBuilder, zeebeState, atomix.getCommunicationService(), partitionId);
   }
 
   private void addMessageProcessors(

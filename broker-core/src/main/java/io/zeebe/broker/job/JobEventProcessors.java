@@ -17,6 +17,7 @@
  */
 package io.zeebe.broker.job;
 
+import io.atomix.cluster.messaging.ClusterCommunicationService;
 import io.zeebe.broker.logstreams.processor.TypedEventStreamProcessorBuilder;
 import io.zeebe.broker.logstreams.state.ZeebeState;
 import io.zeebe.broker.workflow.processor.job.JobCompletedEventProcessor;
@@ -28,14 +29,14 @@ import io.zeebe.protocol.intent.JobIntent;
 
 public class JobEventProcessors {
   public static void addJobProcessors(
-      TypedEventStreamProcessorBuilder typedEventStreamProcessorBuilder, ZeebeState zeebeState) {
+    TypedEventStreamProcessorBuilder typedEventStreamProcessorBuilder, ZeebeState zeebeState, ClusterCommunicationService communicationService, int partitionId) {
     final WorkflowState workflowState = zeebeState.getWorkflowState();
     final JobState jobState = zeebeState.getJobState();
 
     typedEventStreamProcessorBuilder
         .onEvent(ValueType.JOB, JobIntent.CREATED, new JobCreatedProcessor(workflowState))
         .onEvent(ValueType.JOB, JobIntent.COMPLETED, new JobCompletedEventProcessor(workflowState))
-        .onCommand(ValueType.JOB, JobIntent.CREATE, new CreateProcessor(jobState))
+        .onCommand(ValueType.JOB, JobIntent.CREATE, new CreateProcessor(jobState, communicationService, partitionId))
         .onCommand(ValueType.JOB, JobIntent.COMPLETE, new CompleteProcessor(jobState))
         .onCommand(ValueType.JOB, JobIntent.FAIL, new FailProcessor(jobState))
         .onEvent(ValueType.JOB, JobIntent.FAILED, new JobFailedProcessor())

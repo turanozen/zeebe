@@ -15,12 +15,6 @@
  */
 package io.zeebe.broker.it.job;
 
-import static io.zeebe.exporter.api.record.Assertions.assertThat;
-import static io.zeebe.test.util.TestUtil.waitUntil;
-import static io.zeebe.test.util.record.RecordingExporter.jobBatchRecords;
-import static io.zeebe.test.util.record.RecordingExporter.jobRecords;
-import static org.assertj.core.api.Assertions.assertThat;
-
 import io.zeebe.broker.it.GrpcClientRule;
 import io.zeebe.broker.it.util.RecordingJobHandler;
 import io.zeebe.broker.test.EmbeddedBrokerRule;
@@ -29,24 +23,28 @@ import io.zeebe.client.api.response.ActivatedJob;
 import io.zeebe.client.api.subscription.JobWorker;
 import io.zeebe.exporter.api.record.Record;
 import io.zeebe.exporter.api.record.value.JobRecordValue;
+import io.zeebe.model.bpmn.Bpmn;
 import io.zeebe.protocol.intent.JobBatchIntent;
 import io.zeebe.protocol.intent.JobIntent;
 import io.zeebe.test.util.TestUtil;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.RuleChain;
 import org.junit.rules.Timeout;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.stream.IntStream;
+
+import static io.zeebe.exporter.api.record.Assertions.assertThat;
+import static io.zeebe.test.util.TestUtil.waitUntil;
+import static io.zeebe.test.util.record.RecordingExporter.jobBatchRecords;
+import static io.zeebe.test.util.record.RecordingExporter.jobRecords;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class JobWorkerTest {
   public EmbeddedBrokerRule brokerRule = new EmbeddedBrokerRule();
@@ -490,6 +488,78 @@ public class JobWorkerTest {
     // then
     latch.await();
     assertThat(capturedVariables).isSubsetOf(fetchVariables);
+  }
+
+  @Test
+  public void shouldFetchJobsWhenAvailable() throws InterruptedException {
+    // given
+    final RecordingJobHandler jobHandler = new RecordingJobHandler();
+
+    client.newWorker().jobType("foo").handler(jobHandler).name("test").open();
+
+    // when
+    createJobOfType("foo");
+
+    // then
+    waitUntil(() -> !jobHandler.getHandledJobs().isEmpty());
+
+    final List<ActivatedJob> jobs = jobHandler.getHandledJobs();
+    assertThat(jobs).hasSize(1);
+
+    final ActivatedJob job = jobs.get(0);
+    // ...
+
+    final Record<JobRecordValue> createdRecord = jobRecords(JobIntent.CREATED).getFirst();
+    final Record<JobRecordValue> activatedRecord = jobRecords(JobIntent.ACTIVATED).getFirst();
+
+    final Duration fetchDelay =
+        Duration.between(createdRecord.getTimestamp(), activatedRecord.getTimestamp());
+
+    System.out.println("> fetch delay was: " + fetchDelay);
+  }
+
+  @Test
+  public void shouldFetchJobsWithMultipleWorkers() throws InterruptedException {
+    // given
+    final RecordingJobHandler jobHandler = new RecordingJobHandler();
+
+    IntStream.range(0, 2)
+        .forEach(
+            i -> client.newWorker().jobType("foo").handler(jobHandler).name("test-" + i).open());
+
+    final long workflowKey =
+        clientRule.deployWorkflow(
+            Bpmn.createExecutableProcess("process")
+                .startEvent()
+                .parallelGateway()
+                .serviceTask("task-1", t -> t.zeebeTaskType("foo"))
+                .moveToLastGateway()
+                .serviceTask("task-2", t -> t.zeebeTaskType("foo"))
+                .done());
+
+    // when
+    clientRule.createWorkflowInstance(workflowKey);
+
+    // then
+    waitUntil(() -> !jobHandler.getHandledJobs().isEmpty());
+
+    final List<ActivatedJob> jobs = jobHandler.getHandledJobs();
+    assertThat(jobs).hasSize(2);
+
+    final ActivatedJob job = jobs.get(0);
+    // ...
+
+    final List<Record<JobRecordValue>> createdRecords =
+        jobRecords(JobIntent.CREATED).limit(2).asList();
+    final List<Record<JobRecordValue>> activatedRecords =
+        jobRecords(JobIntent.ACTIVATED).limit(createdRecords.size()).asList();
+
+    for (int i = 0; i < createdRecords.size(); i++) {
+      final Duration fetchDelay =
+          Duration.between(
+              createdRecords.get(0).getTimestamp(), activatedRecords.get(0).getTimestamp());
+      System.out.println("> fetch delay was: " + fetchDelay);
+    }
   }
 
   private long createJobOfType(final String type) {

@@ -25,6 +25,8 @@ import io.zeebe.gateway.impl.configuration.GatewayCfg;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.function.Function;
+
+import io.zeebe.gateway.impl.job.JobPollHandler;
 import org.slf4j.Logger;
 
 public class Gateway {

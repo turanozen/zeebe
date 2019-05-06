@@ -15,9 +15,11 @@
  */
 package io.zeebe.gateway.impl.broker;
 
+import io.atomix.cluster.messaging.ClusterCommunicationService;
 import io.zeebe.gateway.impl.broker.cluster.BrokerTopologyManager;
 import io.zeebe.gateway.impl.broker.request.BrokerRequest;
 import io.zeebe.gateway.impl.broker.response.BrokerResponse;
+import io.zeebe.gateway.impl.job.JobPollHandler;
 import io.zeebe.util.sched.future.ActorFuture;
 import java.util.function.Consumer;
 
@@ -33,4 +35,7 @@ public interface BrokerClient extends AutoCloseable {
       Consumer<Throwable> throwableConsumer);
 
   BrokerTopologyManager getTopologyManager();
+
+  JobPollHandler getJobPollHandler();
+
 }

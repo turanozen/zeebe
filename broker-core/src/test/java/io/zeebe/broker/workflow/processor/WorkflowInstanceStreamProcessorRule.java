@@ -27,6 +27,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.atomix.cluster.messaging.ClusterCommunicationService;
 import io.zeebe.broker.clustering.base.topology.TopologyManager;
 import io.zeebe.broker.job.JobEventProcessors;
 import io.zeebe.broker.logstreams.processor.StreamProcessorLifecycleAware;
@@ -103,6 +104,7 @@ public class WorkflowInstanceStreamProcessorRule extends ExternalResource
   protected void before() throws Exception {
     mockSubscriptionCommandSender = mock(SubscriptionCommandSender.class);
     mockTopologyManager = mock(TopologyManager.class);
+    final ClusterCommunicationService communicationServiceMock = mock(ClusterCommunicationService.class);
 
     when(mockSubscriptionCommandSender.openMessageSubscription(
             anyInt(), anyLong(), anyLong(), any(), any(), anyBoolean()))
@@ -127,7 +129,7 @@ public class WorkflowInstanceStreamProcessorRule extends ExternalResource
                   new DueDateTimerChecker(workflowState),
                   1);
 
-              JobEventProcessors.addJobProcessors(typedEventStreamProcessorBuilder, zeebeState);
+              JobEventProcessors.addJobProcessors(typedEventStreamProcessorBuilder, zeebeState, communicationServiceMock, 1);
               typedEventStreamProcessorBuilder.withListener(this);
               return typedEventStreamProcessorBuilder.build();
             });
