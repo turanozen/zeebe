@@ -28,6 +28,7 @@ public class StreamProcessorMetrics {
 
   public StreamProcessorMetrics(
       final MetricsManager metricsManager, final String processorName, final String partitionId) {
+
     eventsProcessedCountMetric =
         metricsManager
             .newMetric("streamprocessor_events_count")

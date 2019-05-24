@@ -17,6 +17,8 @@
  */
 package io.zeebe.engine.processor;
 
+import static io.zeebe.util.metrics.MetricsManager.PROCESSING_LATENCY;
+
 import io.zeebe.db.DbContext;
 import io.zeebe.db.ZeebeDbTransaction;
 import io.zeebe.engine.state.ZeebeState;
@@ -36,6 +38,7 @@ import io.zeebe.util.retry.AbortableRetryStrategy;
 import io.zeebe.util.retry.RecoverableRetryStrategy;
 import io.zeebe.util.retry.RetryStrategy;
 import io.zeebe.util.sched.ActorControl;
+import io.zeebe.util.sched.clock.ActorClock;
 import io.zeebe.util.sched.future.ActorFuture;
 import java.time.Duration;
 import java.util.Map;
@@ -194,6 +197,11 @@ public final class ProcessingStateMachine {
       }
 
       currentEvent = logStreamReader.next();
+
+      PROCESSING_LATENCY
+          .labels(Integer.toString(logStream.getPartitionId()))
+          .observe(
+              (Math.max(ActorClock.currentTimeMillis() - currentEvent.getTimestamp(), 0) / 1000f));
 
       if (eventFilter == null || eventFilter.applies(currentEvent)) {
         processEvent(currentEvent);

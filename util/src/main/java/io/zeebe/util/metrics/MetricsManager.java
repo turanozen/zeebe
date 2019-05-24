@@ -15,6 +15,11 @@
  */
 package io.zeebe.util.metrics;
 
+import io.prometheus.client.CollectorRegistry;
+import io.prometheus.client.Histogram;
+import io.prometheus.client.exporter.common.TextFormat;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +29,14 @@ import java.util.function.Consumer;
 import org.agrona.MutableDirectBuffer;
 
 public class MetricsManager {
+
+  public static final Histogram PROCESSING_LATENCY =
+      Histogram.build()
+          .name("zb_processing_latency_ms")
+          .help("Time between written and processed (processing latency).")
+          .labelNames("partition")
+          .register();
+
   private final List<Metric> metrics = new ArrayList<>();
 
   private final String prefix;
@@ -63,10 +76,43 @@ public class MetricsManager {
         offset = metrics.get(i).dump(buffer, offset, now);
       }
 
-      return offset;
+      final MetricWriter writer = new MetricWriter(offset, buffer);
+      try {
+        TextFormat.write004(writer, CollectorRegistry.defaultRegistry.metricFamilySamples());
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+
+      return offset + writer.written;
     } finally {
       lock.unlock();
     }
+  }
+
+  private class MetricWriter extends Writer {
+    private int thisOffset;
+    private final MutableDirectBuffer buffer;
+
+    MetricWriter(int thisOffset, MutableDirectBuffer buffer) {
+      this.thisOffset = thisOffset;
+      this.buffer = buffer;
+    }
+
+    public int written;
+
+    @Override
+    public void write(char[] cbuf, int off, int len) {
+      for (int i = off; i < len; i++) {
+        buffer.putChar(thisOffset++, cbuf[i]);
+      }
+      written += len;
+    }
+
+    @Override
+    public void flush() {}
+
+    @Override
+    public void close() {}
   }
 
   public void free(Metric metric) {
