@@ -71,6 +71,8 @@ public class StreamProcessor extends Actor implements Service<StreamProcessor> {
   private ProcessingStateMachine processingStateMachine;
 
   private Phase phase = Phase.REPROCESSING;
+  private CompletableActorFuture<Void> openFuture;
+  private CompletableActorFuture<Void> closeFuture;
 
   protected StreamProcessor(final StreamProcessorBuilder context) {
     this.actorScheduler = context.getActorScheduler();
@@ -119,6 +121,7 @@ public class StreamProcessor extends Actor implements Service<StreamProcessor> {
 
   public ActorFuture<Void> openAsync() {
     if (isOpened.compareAndSet(false, true)) {
+      openFuture = new CompletableActorFuture<>();
       return actorScheduler.submitActor(this, true);
     } else {
       return CompletableActorFuture.completed(null);
@@ -170,6 +173,8 @@ public class StreamProcessor extends Actor implements Service<StreamProcessor> {
       onFailure();
       throw e;
     }
+
+    openFuture.complete(null);
   }
 
   private void initProcessors() {
@@ -224,10 +229,11 @@ public class StreamProcessor extends Actor implements Service<StreamProcessor> {
 
   public ActorFuture<Void> closeAsync() {
     if (isOpened.compareAndSet(true, false)) {
-      return actor.close();
-    } else {
-      return CompletableActorFuture.completed(null);
+      closeFuture = new CompletableActorFuture<>();
+      actor.call(() -> actor.runOnCompletion(openFuture, (v, t) -> actor.close()));
     }
+
+    return closeFuture != null ? closeFuture : CompletableActorFuture.completed(null);
   }
 
   @Override
@@ -250,6 +256,7 @@ public class StreamProcessor extends Actor implements Service<StreamProcessor> {
 
   @Override
   protected void onActorClosed() {
+    closeFuture.complete(null);
     LOG.debug("Closed stream processor controller {}.", getName());
   }
 
