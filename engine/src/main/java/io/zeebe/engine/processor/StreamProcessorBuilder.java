@@ -145,9 +145,7 @@ public class StreamProcessorBuilder {
             .dependency(LogStreamServiceNames.logStorageServiceName(logName))
             .dependency(LogStreamServiceNames.logBlockIndexServiceName(logName));
 
-    if (additionalDependencies != null) {
-      additionalDependencies.forEach((d) -> serviceBuilder.dependency(d));
-    }
+    additionalDependencies.forEach(serviceBuilder::dependency);
 
     return serviceBuilder.install();
   }

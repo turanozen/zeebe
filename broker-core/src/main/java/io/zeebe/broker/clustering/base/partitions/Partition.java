@@ -167,6 +167,7 @@ public class Partition implements Service<Partition> {
 
   @Override
   public void stop(ServiceStopContext stopContext) {
+    LOG.error("Stop partition");
     stateReplication.close();
     restoreServer.close();
 
