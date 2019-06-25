@@ -25,7 +25,9 @@
 
   <Loggers>
     <Logger name="io.zeebe" level="${env:ZEEBE_LOG_LEVEL:-info}"/>
-    <Logger name="io.atomix.protocols.raft" level="${env:RAFT_LOG_LEVEL:-info}"/>
+    <Logger name="io.atomix.protocols.raft.roles.FollowerRole" level="${env:RAFT_LOG_LEVEL:-info}"/>
+    <Logger name="io.atomix.protocols.raft.roles.LeaderAppender"
+      level="${env:RAFT_LOG_LEVEL:-info}"/>
 
     <Root level="info">
       <AppenderRef ref="RollingFile"/>
