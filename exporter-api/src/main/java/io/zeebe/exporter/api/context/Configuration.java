@@ -22,6 +22,9 @@ public interface Configuration {
   /** @return the configured ID of the exporter */
   String getId();
 
+  /** @return true if the exporter should be called by reference, otherwise it is called by value */
+  boolean shouldCallByReference();
+
   /** @return raw map of the parsed arguments from the configuration file */
   Map<String, Object> getArguments();
 

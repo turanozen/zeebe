@@ -38,12 +38,12 @@ import org.junit.rules.RuleChain;
 import org.junit.rules.TemporaryFolder;
 
 public class ExporterRepositoryTest {
-  private TemporaryFolder temporaryFolder = new TemporaryFolder();
-  private JarCreatorRule jarCreator = new JarCreatorRule(temporaryFolder);
+  private final TemporaryFolder temporaryFolder = new TemporaryFolder();
+  private final JarCreatorRule jarCreator = new JarCreatorRule(temporaryFolder);
 
   @Rule public RuleChain chain = RuleChain.outerRule(temporaryFolder).around(jarCreator);
 
-  private ExporterRepository repository = new ExporterRepository();
+  private final ExporterRepository repository = new ExporterRepository();
 
   @Test
   public void shouldCacheDescriptorOnceLoaded() throws ExporterLoadException {
@@ -52,7 +52,7 @@ public class ExporterRepositoryTest {
     final Class<? extends Exporter> exporterClass = TestJarExporter.class;
 
     // when
-    final ExporterDescriptor descriptor = repository.load(id, exporterClass, null);
+    final ExporterDescriptor descriptor = repository.load(id, exporterClass);
 
     // then
     assertThat(descriptor).isNotNull();

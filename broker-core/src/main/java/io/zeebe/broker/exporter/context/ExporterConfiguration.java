@@ -29,11 +29,18 @@ public class ExporterConfiguration implements Configuration {
 
   private final String id;
   private final Map<String, Object> arguments;
+  private final boolean callByReference;
 
   private JsonElement intermediateConfiguration;
 
   public ExporterConfiguration(final String id, final Map<String, Object> arguments) {
+    this(id, false, arguments);
+  }
+
+  public ExporterConfiguration(
+      final String id, boolean callByReference, final Map<String, Object> arguments) {
     this.id = id;
+    this.callByReference = callByReference;
     this.arguments = arguments;
   }
 
@@ -45,6 +52,10 @@ public class ExporterConfiguration implements Configuration {
   @Override
   public Map<String, Object> getArguments() {
     return arguments;
+  }
+
+  public boolean shouldCallByReference() {
+    return callByReference;
   }
 
   @Override

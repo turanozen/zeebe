@@ -41,11 +41,22 @@ public class ExporterCfg implements ConfigurationEntry {
   /** map of arguments to use when instantiating the exporter */
   private Map<String, Object> args;
 
+  /** Indicates whether the exporter should be called by reference or by value. */
+  private boolean callByReference;
+
   @Override
   public void init(BrokerCfg globalConfig, String brokerBase, Environment environment) {
     if (isExternal()) {
       jarPath = ConfigurationUtil.toAbsolutePath(jarPath, brokerBase);
     }
+  }
+
+  public boolean getCallByReference() {
+    return callByReference;
+  }
+
+  public void setCallByReference(boolean callByReference) {
+    this.callByReference = callByReference;
   }
 
   public boolean isExternal() {

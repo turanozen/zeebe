@@ -49,18 +49,19 @@ public class ExporterRepository {
 
   public ExporterDescriptor load(final String id, final Class<? extends Exporter> exporterClass)
       throws ExporterLoadException {
-    return load(id, exporterClass, null);
+    return load(id, false, exporterClass, null);
   }
 
   public ExporterDescriptor load(
       final String id,
+      final boolean callByReference,
       final Class<? extends Exporter> exporterClass,
       final Map<String, Object> args)
       throws ExporterLoadException {
     ExporterDescriptor descriptor = exporters.get(id);
 
     if (descriptor == null) {
-      descriptor = new ExporterDescriptor(id, exporterClass, args);
+      descriptor = new ExporterDescriptor(id, callByReference, exporterClass, args);
       validate(descriptor);
 
       exporters.put(id, descriptor);
@@ -92,7 +93,7 @@ public class ExporterRepository {
       throw new ExporterLoadException(id, "cannot load specified class", e);
     }
 
-    return load(id, exporterClass, config.getArgs());
+    return load(id, config.getCallByReference(), exporterClass, config.getArgs());
   }
 
   private void validate(final ExporterDescriptor descriptor) throws ExporterLoadException {

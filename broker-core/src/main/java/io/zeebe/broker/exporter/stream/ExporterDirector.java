@@ -364,6 +364,7 @@ public class ExporterDirector extends Actor implements Service<ExporterDirector>
     private Record record;
     private boolean shouldExport;
     private int exporterIndex;
+    private LoggedEvent rawEvent;
 
     RecordExporter(List<ExporterContainer> containers, int partitionId) {
       this.containers = containers;
@@ -375,7 +376,7 @@ public class ExporterDirector extends Actor implements Service<ExporterDirector>
 
       shouldExport = EVENT_REGISTRY.containsKey(rawMetadata.getValueType());
       if (shouldExport) {
-        record = CopiedRecords.createCopiedRecord(partitionId, rawEvent);
+        this.rawEvent = rawEvent;
         exporterIndex = 0;
       }
     }
@@ -391,6 +392,12 @@ public class ExporterDirector extends Actor implements Service<ExporterDirector>
       // successfully exported.
       while (exporterIndex < exportersCount) {
         final ExporterContainer container = containers.get(exporterIndex);
+
+        if (container.context.getConfiguration().shouldCallByReference()) {
+          record = CopiedRecords.createReferenceRecord(partitionId, rawEvent);
+        } else {
+          record = CopiedRecords.createCopiedRecord(partitionId, rawEvent);
+        }
 
         try {
           if (container.position < record.getPosition() && container.acceptRecord(rawMetadata)) {

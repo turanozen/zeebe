@@ -61,4 +61,22 @@ public class CopiedRecords {
         rawEvent.getSourceEventPosition(),
         rawEvent.getTimestamp());
   }
+
+  public static CopiedRecord createReferenceRecord(int partitionId, LoggedEvent rawEvent) {
+    final RecordMetadata metadata = new RecordMetadata();
+    rawEvent.readMetadata(metadata);
+
+    final UnifiedRecordValue recordValue =
+        ReflectUtil.newInstance(EVENT_REGISTRY.get(metadata.getValueType()));
+    rawEvent.readValue(recordValue);
+
+    return new CopiedRecord<>(
+        recordValue,
+        metadata,
+        rawEvent.getKey(),
+        partitionId,
+        rawEvent.getPosition(),
+        rawEvent.getSourceEventPosition(),
+        rawEvent.getTimestamp());
+  }
 }

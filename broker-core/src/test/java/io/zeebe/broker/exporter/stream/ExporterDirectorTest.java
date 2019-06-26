@@ -30,6 +30,7 @@ import io.zeebe.broker.exporter.util.ControlledTestExporter;
 import io.zeebe.broker.exporter.util.PojoConfigurationExporter;
 import io.zeebe.broker.exporter.util.PojoConfigurationExporter.PojoExporterConfiguration;
 import io.zeebe.engine.Loggers;
+import io.zeebe.exporter.api.Exporter;
 import io.zeebe.exporter.api.context.Context;
 import io.zeebe.protocol.impl.record.value.deployment.DeploymentRecord;
 import io.zeebe.protocol.impl.record.value.incident.IncidentRecord;
@@ -40,6 +41,7 @@ import io.zeebe.protocol.record.ValueType;
 import io.zeebe.protocol.record.intent.DeploymentIntent;
 import io.zeebe.protocol.record.intent.IncidentIntent;
 import io.zeebe.protocol.record.intent.JobIntent;
+import io.zeebe.test.util.JsonUtil;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -333,6 +335,48 @@ public class ExporterDirectorTest {
         .extracting(Record::getPosition)
         .hasSize(2)
         .contains(eventPosition1, eventPosition2);
+  }
+
+  private class ReferenceExporter implements Exporter {
+    private final List<String> exported;
+
+    public ReferenceExporter(List<String> exported) {
+      this.exported = exported;
+    }
+
+    @Override
+    public void export(Record record) {
+      exported.add(record.toJson());
+    }
+  }
+
+  @Test
+  public void shouldCallExporterByReference() {
+    // given
+    final List<String> exported = new ArrayList<>();
+    final Exporter exporter = spy(new ReferenceExporter(exported));
+
+    final ExporterDescriptor descriptor =
+        spy(new ExporterDescriptor("test", true, exporter.getClass(), null));
+    doAnswer(c -> exporter).when(descriptor).newInstance();
+
+    startExporterDirector(Collections.singletonList(descriptor));
+
+    // when
+    final long eventPosition1 = writeEvent();
+    final long eventPosition2 = writeEvent();
+
+    // then
+    waitUntil(() -> exported.size() == 2);
+
+    assertThat(exported.size()).isEqualTo(2);
+    final Map<String, Object> firstEvent = JsonUtil.fromJsonAsMap(exported.get(0));
+    final Map<String, Object> secondEvent = JsonUtil.fromJsonAsMap(exported.get(1));
+    final long firstPosition = (long) firstEvent.get("position");
+    assertThat(firstPosition).isEqualTo(eventPosition1);
+    final long secondPosition = (long) secondEvent.get("position");
+    assertThat(secondPosition).isEqualTo(eventPosition2);
+    assertThat(firstPosition).isLessThan(secondPosition);
   }
 
   @Test

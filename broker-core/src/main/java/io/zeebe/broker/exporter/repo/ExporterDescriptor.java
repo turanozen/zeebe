@@ -33,6 +33,15 @@ public class ExporterDescriptor {
     this.configuration = new ExporterConfiguration(id, args);
   }
 
+  public ExporterDescriptor(
+      final String id,
+      final boolean callByReference,
+      final Class<? extends Exporter> exporterClass,
+      final Map<String, Object> args) {
+    this.exporterClass = exporterClass;
+    this.configuration = new ExporterConfiguration(id, callByReference, args);
+  }
+
   public Exporter newInstance() throws ExporterInstantiationException {
     try {
       return exporterClass.newInstance();
