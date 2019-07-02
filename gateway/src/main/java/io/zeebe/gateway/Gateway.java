@@ -93,9 +93,10 @@ public class Gateway {
       final MonitoringServerInterceptor monitoringInterceptor =
           MonitoringServerInterceptor.create(Configuration.allMetrics());
       serverBuilder.addService(
-          ServerInterceptors.intercept(endpointManager, monitoringInterceptor));
+          ServerInterceptors.intercept(
+              endpointManager, monitoringInterceptor, new JwtInterceptor()));
     } else {
-      serverBuilder.addService(endpointManager);
+      serverBuilder.addService(ServerInterceptors.intercept(endpointManager, new JwtInterceptor()));
     }
 
     server = serverBuilder.build();

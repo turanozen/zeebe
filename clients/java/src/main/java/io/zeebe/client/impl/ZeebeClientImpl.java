@@ -16,6 +16,8 @@
 
 package io.zeebe.client.impl;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.zeebe.client.ZeebeClient;
@@ -47,10 +49,14 @@ import io.zeebe.client.impl.worker.JobClientImpl;
 import io.zeebe.client.impl.worker.JobWorkerBuilderImpl;
 import io.zeebe.gateway.protocol.GatewayGrpc;
 import io.zeebe.gateway.protocol.GatewayGrpc.GatewayStub;
+import io.zeebe.util.AuthConstants;
 import io.zeebe.util.CloseableSilently;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -109,7 +115,32 @@ public class ZeebeClientImpl implements ZeebeClient {
   }
 
   public static GatewayStub buildGatewayStub(ManagedChannel channel) {
-    return GatewayGrpc.newStub(channel);
+    return GatewayGrpc.newStub(channel)
+        .withCallCredentials(buildCredentials(AuthConstants.TEST_SECRET));
+  }
+
+  private static JwtCallCredentials buildCredentials(String secret) {
+    final Algorithm algorithm = Algorithm.HMAC256(secret);
+    final Map<String, Object> header =
+        new HashMap<String, Object>() {
+          {
+            put("typ", "JWT");
+            put("alg", algorithm.getName());
+          }
+        };
+
+    final Calendar currentCalendar = Calendar.getInstance();
+    currentCalendar.add(Calendar.MONTH, 6);
+
+    final String jws =
+        JWT.create()
+            .withHeader(header)
+            .withIssuer(AuthConstants.JWT_ISSUER)
+            .withSubject(AuthConstants.JWT_SUBJECT)
+            .withExpiresAt(currentCalendar.getTime())
+            .sign(algorithm);
+
+    return new JwtCallCredentials(jws);
   }
 
   private static ScheduledExecutorService buildExecutorService(

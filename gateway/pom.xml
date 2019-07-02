@@ -18,7 +18,6 @@
       <artifactId>zeebe-gateway-protocol</artifactId>
     </dependency>
 
-
     <dependency>
       <groupId>io.zeebe</groupId>
       <artifactId>zeebe-util</artifactId>
@@ -143,6 +142,11 @@
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.auth0</groupId>
+      <artifactId>java-jwt</artifactId>
+      <version>3.8.1</version>
     </dependency>
   </dependencies>
 
