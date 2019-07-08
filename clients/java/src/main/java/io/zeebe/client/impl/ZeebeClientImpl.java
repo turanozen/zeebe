@@ -19,7 +19,8 @@ package io.zeebe.client.impl;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
+import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
+import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.zeebe.client.ZeebeClient;
 import io.zeebe.client.ZeebeClientConfiguration;
 import io.zeebe.client.api.command.ActivateJobsCommandStep1;
@@ -61,6 +62,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import javax.net.ssl.SSLException;
 
 public class ZeebeClientImpl implements ZeebeClient {
   private final ZeebeClientConfiguration config;
@@ -108,10 +110,19 @@ public class ZeebeClientImpl implements ZeebeClient {
       throw new RuntimeException("Failed to parse broker contact point", e);
     }
 
-    // TODO: Issue #1134 - https://github.com/zeebe-io/zeebe/issues/1134
-    return ManagedChannelBuilder.forAddress(address.getHost(), address.getPort())
-        .usePlaintext()
-        .build();
+    try {
+      return NettyChannelBuilder.forAddress(address.getHost(), address.getPort())
+          .useTransportSecurity()
+          .sslContext(
+              GrpcSslContexts.forClient()
+                  .trustManager(
+                      ZeebeClientImpl.class.getClassLoader().getResourceAsStream("ca.cert.pem"))
+                  .build())
+          .overrideAuthority("zeebe-server") // TODO(miguel): match server cert subject - test only
+          .build();
+    } catch (SSLException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public static GatewayStub buildGatewayStub(ManagedChannel channel) {

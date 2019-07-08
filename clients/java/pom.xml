@@ -74,7 +74,7 @@
 
     <dependency>
       <groupId>io.grpc</groupId>
-      <artifactId>grpc-netty</artifactId>
+      <artifactId>grpc-netty-shaded</artifactId>
     </dependency>
 
     <dependency>
@@ -123,12 +123,11 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
-        <configuration>
+        <!--<configuration>
           <usedDependencies>
-            <!-- dependency indirectly used by grpc managed channel provider -->
             <dependency>io.grpc:grpc-netty</dependency>
           </usedDependencies>
-        </configuration>
+        </configuration>-->
       </plugin>
     </plugins>
   </build>

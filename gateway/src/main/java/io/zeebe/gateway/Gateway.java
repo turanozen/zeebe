@@ -19,13 +19,16 @@ import io.atomix.cluster.AtomixCluster;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.ServerInterceptors;
-import io.grpc.netty.NettyServerBuilder;
+import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
+import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
+import io.grpc.netty.shaded.io.netty.handler.ssl.SslContextBuilder;
 import io.zeebe.gateway.impl.broker.BrokerClient;
 import io.zeebe.gateway.impl.broker.BrokerClientImpl;
 import io.zeebe.gateway.impl.configuration.GatewayCfg;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.function.Function;
+import javax.net.ssl.SSLException;
 import me.dinowernli.grpc.prometheus.Configuration;
 import me.dinowernli.grpc.prometheus.MonitoringServerInterceptor;
 import org.slf4j.Logger;
@@ -35,9 +38,24 @@ public class Gateway {
   public static final String VERSION;
   private static final Logger LOG = Loggers.GATEWAY_LOGGER;
   private static final Function<GatewayCfg, ServerBuilder> DEFAULT_SERVER_BUILDER_FACTORY =
-      cfg ->
-          NettyServerBuilder.forAddress(
-              new InetSocketAddress(cfg.getNetwork().getHost(), cfg.getNetwork().getPort()));
+      cfg -> {
+        try {
+          return NettyServerBuilder.forAddress(
+                  new InetSocketAddress(cfg.getNetwork().getHost(), cfg.getNetwork().getPort()))
+              .sslContext(
+                  GrpcSslContexts.configure(
+                          SslContextBuilder.forServer(
+                              Gateway.class
+                                  .getClassLoader()
+                                  .getResourceAsStream("full-chain.cert.pem"),
+                              Gateway.class
+                                  .getClassLoader()
+                                  .getResourceAsStream("zeebe-server.key.pem")))
+                      .build());
+        } catch (SSLException e) {
+          throw new RuntimeException(e);
+        }
+      };
 
   static {
     final String version = Gateway.class.getPackage().getImplementationVersion();

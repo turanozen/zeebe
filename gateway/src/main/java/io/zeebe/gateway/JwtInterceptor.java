@@ -96,8 +96,7 @@ public class JwtInterceptor implements ServerInterceptor {
   }
 
   class InvalidAuthentication extends Exception {
-
-    public InvalidAuthentication(final String message) {
+    InvalidAuthentication(final String message) {
       super(message);
     }
   }

@@ -18,6 +18,7 @@ package io.zeebe.client.impl;
 import io.grpc.CallCredentials;
 import io.grpc.Metadata;
 import io.grpc.Metadata.Key;
+import io.grpc.SecurityLevel;
 import io.grpc.Status;
 import io.zeebe.util.AuthConstants;
 import java.util.concurrent.Executor;
@@ -39,7 +40,7 @@ public class JwtCallCredentials extends CallCredentials {
   @Override
   public void applyRequestMetadata(
       final RequestInfo requestInfo, final Executor appExecutor, final MetadataApplier applier) {
-    if (true) { // requestInfo.getSecurityLevel() == SecurityLevel.PRIVACY_AND_INTEGRITY) {
+    if (requestInfo.getSecurityLevel() == SecurityLevel.PRIVACY_AND_INTEGRITY) {
       logger.debug("Applying JWT to call metadata");
       applier.apply(headers);
     } else {

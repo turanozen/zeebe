@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
   <name>Zeebe Parent</name>
@@ -76,7 +78,8 @@
     <plugin.version.fmt>2.9</plugin.version.fmt>
     <plugin.version.license>3.0</plugin.version.license>
     <plugin.version.protobuf-maven-plugin>0.6.1</plugin.version.protobuf-maven-plugin>
-    <plugin.version.proto-backwards-compatibility>1.0.3</plugin.version.proto-backwards-compatibility>
+    <plugin.version.proto-backwards-compatibility>1.0.3
+    </plugin.version.proto-backwards-compatibility>
     <plugin.version.replacer>1.5.3</plugin.version.replacer>
     <plugin.version.resources>3.1.0</plugin.version.resources>
     <plugin.version.scala>4.1.0</plugin.version.scala>
@@ -333,7 +336,7 @@
 
       <dependency>
         <groupId>io.grpc</groupId>
-        <artifactId>grpc-netty</artifactId>
+        <artifactId>grpc-netty-shaded</artifactId>
         <version>${version.grpc}</version>
       </dependency>
 
@@ -750,7 +753,7 @@
                     </goals>
                   </pluginExecutionFilter>
                   <action>
-                    <ignore />
+                    <ignore/>
                   </action>
                 </pluginExecution>
               </pluginExecutions>
@@ -864,7 +867,7 @@
               </goals>
               <configuration>
                 <rules>
-                  <dependencyConvergence />
+                  <dependencyConvergence/>
                 </rules>
               </configuration>
             </execution>
