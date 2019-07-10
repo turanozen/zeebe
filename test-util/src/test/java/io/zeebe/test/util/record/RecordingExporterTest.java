@@ -121,6 +121,11 @@ public class RecordingExporterTest {
     public String toJson() {
       return null;
     }
+
+    @Override
+    public Record<TestValue> clone() {
+      return this;
+    }
   }
 
   public static class TestValue implements RecordValue {

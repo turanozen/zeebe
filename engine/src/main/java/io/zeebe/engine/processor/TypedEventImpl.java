@@ -18,9 +18,9 @@
 package io.zeebe.engine.processor;
 
 import io.zeebe.logstreams.log.LoggedEvent;
-import io.zeebe.protocol.Protocol;
 import io.zeebe.protocol.impl.record.RecordMetadata;
 import io.zeebe.protocol.impl.record.UnifiedRecordValue;
+import io.zeebe.protocol.record.Record;
 import io.zeebe.protocol.record.RecordType;
 import io.zeebe.protocol.record.RejectionType;
 import io.zeebe.protocol.record.ValueType;
@@ -28,9 +28,15 @@ import io.zeebe.protocol.record.intent.Intent;
 
 @SuppressWarnings({"rawtypes"})
 public class TypedEventImpl implements TypedRecord {
+  private final int partitionId;
+
   protected LoggedEvent rawEvent;
   protected RecordMetadata metadata;
   protected UnifiedRecordValue value;
+
+  public TypedEventImpl(int partitionId) {
+    this.partitionId = partitionId;
+  }
 
   public void wrap(LoggedEvent rawEvent, RecordMetadata metadata, UnifiedRecordValue value) {
     this.rawEvent = rawEvent;
@@ -78,7 +84,7 @@ public class TypedEventImpl implements TypedRecord {
 
   @Override
   public int getPartitionId() {
-    return Protocol.decodePartitionId(getKey());
+    return partitionId;
   }
 
   @Override
@@ -116,5 +122,10 @@ public class TypedEventImpl implements TypedRecord {
     final StringBuilder builder = new StringBuilder();
     value.writeJSON(builder);
     return builder.toString();
+  }
+
+  @Override
+  public Record clone() {
+    return CopiedRecords.createCopiedRecord(getPartitionId(), rawEvent);
   }
 }

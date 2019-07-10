@@ -21,10 +21,7 @@ import io.zeebe.db.DbContext;
 import io.zeebe.engine.state.ZeebeState;
 import io.zeebe.logstreams.log.LogStream;
 import io.zeebe.logstreams.log.LogStreamReader;
-import io.zeebe.protocol.impl.record.UnifiedRecordValue;
-import io.zeebe.protocol.record.ValueType;
 import io.zeebe.util.sched.ActorControl;
-import java.util.Map;
 import java.util.function.BooleanSupplier;
 
 public interface ReadonlyProcessingContext {
@@ -45,7 +42,7 @@ public interface ReadonlyProcessingContext {
   TypedStreamWriter getLogStreamWriter();
 
   /** @return the cache, which contains the mapping from ValueType to UnpackedObject (record) */
-  Map<ValueType, UnifiedRecordValue> getEventCache();
+  RecordValueCache getRecordValueCache();
 
   /** @return the map of processors, which are executed during processing */
   RecordProcessorMap getRecordProcessorMap();

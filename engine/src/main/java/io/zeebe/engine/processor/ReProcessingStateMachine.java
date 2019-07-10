@@ -37,7 +37,6 @@ import io.zeebe.util.sched.ActorControl;
 import io.zeebe.util.sched.future.ActorFuture;
 import io.zeebe.util.sched.future.CompletableActorFuture;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -103,9 +102,9 @@ public final class ReProcessingStateMachine {
   private final ActorControl actor;
   private final ErrorRecord errorRecord = new ErrorRecord();
   protected final RecordMetadata metadata = new RecordMetadata();
-  private final TypedEventImpl typedEvent = new TypedEventImpl();
+  private final TypedEventImpl typedEvent;
 
-  private final Map<ValueType, UnifiedRecordValue> eventCache;
+  private final RecordValueCache recordValueCache;
   private final RecordProcessorMap recordProcessorMap;
 
   private final EventFilter eventFilter;
@@ -124,11 +123,12 @@ public final class ReProcessingStateMachine {
     this.actor = context.getActor();
     this.eventFilter = context.getEventFilter();
     this.logStreamReader = context.getLogStreamReader();
-    this.eventCache = context.getEventCache();
+    this.recordValueCache = context.getRecordValueCache();
     this.recordProcessorMap = context.getRecordProcessorMap();
     this.dbContext = context.getDbContext();
     this.zeebeState = context.getZeebeState();
     this.abortCondition = context.getAbortCondition();
+    this.typedEvent = new TypedEventImpl(context.getLogStream().getPartitionId());
 
     this.updateStateRetryStrategy = new EndlessRetryStrategy(actor);
     this.processRetryStrategy = new EndlessRetryStrategy(actor);
@@ -246,9 +246,8 @@ public final class ReProcessingStateMachine {
       return;
     }
 
-    final UnifiedRecordValue value = eventCache.get(metadata.getValueType());
-    value.reset();
-    currentEvent.readValue(value);
+    final UnifiedRecordValue value =
+        recordValueCache.readRecordValue(currentEvent, metadata.getValueType());
     typedEvent.wrap(currentEvent, metadata, value);
 
     processUntilDone(currentEvent.getPosition(), typedEvent);
