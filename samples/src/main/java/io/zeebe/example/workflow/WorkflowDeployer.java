@@ -22,7 +22,7 @@ import io.zeebe.client.api.response.DeploymentEvent;
 public class WorkflowDeployer {
 
   public static void main(final String[] args) {
-    final String broker = "localhost:26500";
+    final String broker = "a.koala.gke.outstandingwombat.com:443";
 
     final ZeebeClientBuilder clientBuilder =
         ZeebeClient.newClientBuilder().brokerContactPoint(broker);
@@ -33,6 +33,8 @@ public class WorkflowDeployer {
           client.newDeployCommand().addResourceFromClasspath("demoProcess.bpmn").send().join();
 
       System.out.println("Deployment created with key: " + deploymentEvent.getKey());
+      System.out.println("Workflow key: " + deploymentEvent.getWorkflows().get(0).getWorkflowKey());
+      System.out.println("Bpmn id: " + deploymentEvent.getWorkflows().get(0).getBpmnProcessId());
     }
   }
 }

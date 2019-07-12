@@ -116,9 +116,10 @@ public class ZeebeClientImpl implements ZeebeClient {
           .sslContext(
               GrpcSslContexts.forClient()
                   .trustManager(
-                      ZeebeClientImpl.class.getClassLoader().getResourceAsStream("ca.cert.pem"))
+                      ZeebeClientImpl.class
+                          .getClassLoader()
+                          .getResourceAsStream("cloud-chain.cert.pem"))
                   .build())
-          .overrideAuthority("zeebe-server") // TODO(miguel): match server cert subject - test only
           .build();
     } catch (SSLException e) {
       throw new RuntimeException(e);
@@ -126,8 +127,8 @@ public class ZeebeClientImpl implements ZeebeClient {
   }
 
   public static GatewayStub buildGatewayStub(ManagedChannel channel) {
-    return GatewayGrpc.newStub(channel)
-        .withCallCredentials(buildCredentials(AuthConstants.TEST_SECRET));
+    return GatewayGrpc.newStub(
+        channel); //  .withCallCredentials(buildCredentials(AuthConstants.TEST_SECRET));
   }
 
   private static JwtCallCredentials buildCredentials(String secret) {

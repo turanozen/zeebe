@@ -22,7 +22,7 @@ import io.zeebe.client.api.response.WorkflowInstanceEvent;
 public class WorkflowInstanceCreator {
 
   public static void main(final String[] args) {
-    final String broker = "127.0.0.1:26500";
+    final String broker = "a.koala.gke.outstandingwombat.com:443";
 
     final String bpmnProcessId = "demoProcess";
 
@@ -42,6 +42,8 @@ public class WorkflowInstanceCreator {
 
       System.out.println(
           "Workflow instance created with key: " + workflowInstanceEvent.getWorkflowInstanceKey());
+      System.out.println("Workflow key: " + workflowInstanceEvent.getWorkflowKey());
+      System.out.println("BPMN id: " + workflowInstanceEvent.getBpmnProcessId());
     }
   }
 }
