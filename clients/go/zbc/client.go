@@ -16,6 +16,7 @@
 package zbc
 
 import (
+    "crypto/tls"
     "google.golang.org/grpc/credentials"
     "time"
 
@@ -93,7 +94,9 @@ func (client *ZBClientImpl) Close() error {
 func NewZBClient(gatewayAddress string) (ZBClient, error) {
     var opts []grpc.DialOption
 
-    creds, _ := credentials.NewClientTLSFromFile("../resources/ca.cert.pem", "zeebe-server")
+    creds := credentials.NewTLS(&tls.Config{ClientAuth: tls.NoClientCert})
+
+    //NewClientTLSFromFile("../resources/ca.cert.pem", "zeebe-server")
     opts = append(opts, grpc.WithTransportCredentials(creds))
 
     conn, err := grpc.Dial(gatewayAddress, opts...)
