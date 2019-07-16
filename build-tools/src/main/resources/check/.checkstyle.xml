@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!DOCTYPE module PUBLIC "-//Puppy Crawl//DTD Check Configuration 1.2//EN"
-        "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
+        "https://checkstyle.org/dtds/configuration_1_2.dtd">
 <module name="Checker">
     <module name="SeverityMatchFilter">
         <property name="severity" value="info"/>
@@ -108,6 +108,32 @@
             <property name="format" value="[ \t]+$"/>
             <property name="illegalPattern" value="true"/>
             <property name="message" value="Trailing whitespace"/>
+        </module>
+
+        <module name="EmptyCatchBlock">
+          <property name="exceptionVariableName" value="expected" />
+          <property name="commentFormat" value=".+" />
+        </module>
+
+        <module name="EqualsAvoidNull" />
+        <module name="DefaultComesLast" />
+        <module name="MissingSwitchDefault" />
+        <module name="InnerTypeLast" />
+        <module name="InterfaceIsType" />
+        <module name="MutableException" />
+        <module name="OverloadMethodsDeclarationOrder" />
+        <module name="NestedForDepth">
+          <property name="max" value="2" />
+        </module>
+        <module name="NestedTryDepth">
+          <property name="max" value="2" />
+        </module>
+        <module name="NestedIfDepth">
+          <property name="max" value="2" />
+        </module>
+        <module name="ParameterAssignment" />
+        <module name="ParameterNumber">
+          <property name="max" value="7" />
         </module>
     </module>
 </module>
