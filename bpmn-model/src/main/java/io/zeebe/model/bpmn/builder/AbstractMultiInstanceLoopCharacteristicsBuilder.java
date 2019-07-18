@@ -21,6 +21,7 @@ import io.zeebe.model.bpmn.instance.Activity;
 import io.zeebe.model.bpmn.instance.CompletionCondition;
 import io.zeebe.model.bpmn.instance.LoopCardinality;
 import io.zeebe.model.bpmn.instance.MultiInstanceLoopCharacteristics;
+import io.zeebe.model.bpmn.instance.zeebe.ZeebeLoopCharacteristics;
 
 /** @author Thorben Lindhauer */
 public class AbstractMultiInstanceLoopCharacteristicsBuilder<
@@ -89,4 +90,17 @@ public class AbstractMultiInstanceLoopCharacteristicsBuilder<
   public <T extends AbstractActivityBuilder> T multiInstanceDone() {
     return (T) ((Activity) element.getParentElement()).builder();
   }
+
+  public B zeebeInputCollection(String inputCollection) {
+    final ZeebeLoopCharacteristics characteristics = getCreateSingleExtensionElement(ZeebeLoopCharacteristics.class);
+    characteristics.setInputCollection(inputCollection);
+    return myself;
+  }
+
+  public B zeebeInputElement(String inputElement) {
+    final ZeebeLoopCharacteristics characteristics = getCreateSingleExtensionElement(ZeebeLoopCharacteristics.class);
+    characteristics.setInputElement(inputElement);
+    return myself;
+  }
+
 }

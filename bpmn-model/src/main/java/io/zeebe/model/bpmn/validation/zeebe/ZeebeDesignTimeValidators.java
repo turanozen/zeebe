@@ -15,9 +15,10 @@
  */
 package io.zeebe.model.bpmn.validation.zeebe;
 
+import org.camunda.bpm.model.xml.validation.ModelElementValidator;
+
 import java.util.ArrayList;
 import java.util.Collection;
-import org.camunda.bpm.model.xml.validation.ModelElementValidator;
 
 public class ZeebeDesignTimeValidators {
 
@@ -37,6 +38,7 @@ public class ZeebeDesignTimeValidators {
     VALIDATORS.add(new IntermediateCatchEventValidator());
     VALIDATORS.add(new MessageEventDefinitionValidator());
     VALIDATORS.add(new MessageValidator());
+    VALIDATORS.add(new MultiInstanceLoopCharacteristicsValidator());
     VALIDATORS.add(new ProcessValidator());
     VALIDATORS.add(new SequenceFlowValidator());
     VALIDATORS.add(new ServiceTaskValidator());
@@ -46,5 +48,6 @@ public class ZeebeDesignTimeValidators {
     VALIDATORS.add(new TimerEventDefinitionValidator());
     VALIDATORS.add(new ZeebeTaskDefinitionValidator());
     VALIDATORS.add(new ZeebeSubscriptionValidator());
+    VALIDATORS.add(new ZeebeLoopCharacteristicsValidator());
   }
 }

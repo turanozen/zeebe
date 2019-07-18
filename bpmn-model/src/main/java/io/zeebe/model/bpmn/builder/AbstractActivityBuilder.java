@@ -25,15 +25,18 @@ import io.zeebe.model.bpmn.instance.dc.Bounds;
 import io.zeebe.model.bpmn.instance.zeebe.ZeebeInput;
 import io.zeebe.model.bpmn.instance.zeebe.ZeebeIoMapping;
 import io.zeebe.model.bpmn.instance.zeebe.ZeebeOutput;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.function.Consumer;
 
-/** @author Sebastian Menski */
+/**
+ * @author Sebastian Menski
+ */
 public abstract class AbstractActivityBuilder<
-        B extends AbstractActivityBuilder<B, E>, E extends Activity>
-    extends AbstractFlowNodeBuilder<B, E> implements ZeebeVariablesMappingBuilder<B> {
+  B extends AbstractActivityBuilder<B, E>, E extends Activity>
+  extends AbstractFlowNodeBuilder<B, E> implements ZeebeVariablesMappingBuilder<B> {
 
   protected AbstractActivityBuilder(BpmnModelInstance modelInstance, E element, Class<?> selfType) {
     super(modelInstance, element, selfType);
@@ -61,9 +64,15 @@ public abstract class AbstractActivityBuilder<
 
   public MultiInstanceLoopCharacteristicsBuilder multiInstance() {
     final MultiInstanceLoopCharacteristics miCharacteristics =
-        createChild(MultiInstanceLoopCharacteristics.class);
+      createChild(MultiInstanceLoopCharacteristics.class);
 
     return miCharacteristics.builder();
+  }
+
+  public MultiInstanceLoopCharacteristicsBuilder multiInstance(Consumer<MultiInstanceLoopCharacteristicsBuilder> consumer) {
+    final MultiInstanceLoopCharacteristicsBuilder builder = multiInstance();
+    consumer.accept(builder);
+    return builder;
   }
 
   protected double calculateXCoordinate(Bounds boundaryEventBounds) {
@@ -76,7 +85,7 @@ public abstract class AbstractActivityBuilder<
       final Bounds attachedToBounds = attachedToElement.getBounds();
 
       final Collection<BoundaryEvent> boundaryEvents =
-          element.getParentElement().getChildElementsByType(BoundaryEvent.class);
+        element.getParentElement().getChildElementsByType(BoundaryEvent.class);
       final Collection<BoundaryEvent> attachedBoundaryEvents = new ArrayList<>();
 
       final Iterator<BoundaryEvent> iterator = boundaryEvents.iterator();
@@ -92,21 +101,18 @@ public abstract class AbstractActivityBuilder<
       final double boundaryWidth = boundaryEventBounds.getWidth();
 
       switch (attachedBoundaryEvents.size()) {
-        case 2:
-          {
-            x = attachedToX + attachedToWidth / 2 + boundaryWidth / 2;
-            break;
-          }
-        case 3:
-          {
-            x = attachedToX + attachedToWidth / 2 - 1.5 * boundaryWidth;
-            break;
-          }
-        default:
-          {
-            x = attachedToX + attachedToWidth / 2 - boundaryWidth / 2;
-            break;
-          }
+        case 2: {
+          x = attachedToX + attachedToWidth / 2 + boundaryWidth / 2;
+          break;
+        }
+        case 3: {
+          x = attachedToX + attachedToWidth / 2 - 1.5 * boundaryWidth;
+          break;
+        }
+        default: {
+          x = attachedToX + attachedToWidth / 2 - boundaryWidth / 2;
+          break;
+        }
       }
     }
 
