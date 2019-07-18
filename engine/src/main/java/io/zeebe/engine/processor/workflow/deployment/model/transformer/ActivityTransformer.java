@@ -10,9 +10,14 @@ package io.zeebe.engine.processor.workflow.deployment.model.transformer;
 import io.zeebe.engine.processor.workflow.deployment.model.BpmnStep;
 import io.zeebe.engine.processor.workflow.deployment.model.element.ExecutableActivity;
 import io.zeebe.engine.processor.workflow.deployment.model.element.ExecutableWorkflow;
+import io.zeebe.engine.processor.workflow.deployment.model.element.LoopCharacteristics;
 import io.zeebe.engine.processor.workflow.deployment.model.transformation.ModelElementTransformer;
 import io.zeebe.engine.processor.workflow.deployment.model.transformation.TransformContext;
 import io.zeebe.model.bpmn.instance.Activity;
+import io.zeebe.model.bpmn.instance.MultiInstanceLoopCharacteristics;
+import io.zeebe.model.bpmn.instance.zeebe.ZeebeLoopCharacteristics;
+import io.zeebe.msgpack.jsonpath.JsonPathQuery;
+import io.zeebe.msgpack.mapping.JsonPathPointer;
 import io.zeebe.protocol.record.intent.WorkflowInstanceIntent;
 
 public class ActivityTransformer implements ModelElementTransformer<Activity> {
@@ -26,6 +31,31 @@ public class ActivityTransformer implements ModelElementTransformer<Activity> {
     final ExecutableWorkflow workflow = context.getCurrentWorkflow();
     final ExecutableActivity activity =
         workflow.getElementById(element.getId(), ExecutableActivity.class);
+
+    final io.zeebe.model.bpmn.instance.LoopCharacteristics elementLoopCharacteristics = element.getLoopCharacteristics();
+    if (elementLoopCharacteristics != null
+      && elementLoopCharacteristics instanceof MultiInstanceLoopCharacteristics) {
+
+      final boolean isSequential =
+        ((MultiInstanceLoopCharacteristics) elementLoopCharacteristics).isSequential();
+
+      final ZeebeLoopCharacteristics loopCharacteristics =
+        elementLoopCharacteristics.getSingleExtensionElement(ZeebeLoopCharacteristics.class);
+
+      // TODO (saig0): validate input collection expression
+      final JsonPathQuery inputCollectionQuery =
+        context.getJsonPathQueryCompiler().compile(loopCharacteristics.getInputCollection());
+
+      // TODO (saig0): validate input element expression
+      // TODO (saig0): extract JsonPath creation
+      // merging algorithm expect a root object $
+      final JsonPathPointer inputElementPath =
+        new JsonPathPointer(("$." + loopCharacteristics.getInputElement()).split("\\."));
+
+      final LoopCharacteristics activityLoopCharacteristics =
+        new LoopCharacteristics(isSequential, inputCollectionQuery, inputElementPath);
+      activity.setLoopCharacteristics(activityLoopCharacteristics);
+    }
 
     activity.bindLifecycleState(
         WorkflowInstanceIntent.ELEMENT_ACTIVATING, BpmnStep.ACTIVITY_ELEMENT_ACTIVATING);

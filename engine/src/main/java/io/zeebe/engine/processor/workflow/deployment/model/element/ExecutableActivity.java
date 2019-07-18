@@ -7,15 +7,18 @@
  */
 package io.zeebe.engine.processor.workflow.deployment.model.element;
 
+import org.agrona.DirectBuffer;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import org.agrona.DirectBuffer;
 
 public class ExecutableActivity extends ExecutableFlowNode implements ExecutableCatchEventSupplier {
   private final List<ExecutableBoundaryEvent> boundaryEvents = new ArrayList<>();
   private final List<ExecutableCatchEvent> catchEvents = new ArrayList<>();
   private final List<DirectBuffer> interruptingIds = new ArrayList<>();
+
+  private LoopCharacteristics loopCharacteristics;
 
   public ExecutableActivity(String id) {
     super(id);
@@ -28,6 +31,18 @@ public class ExecutableActivity extends ExecutableFlowNode implements Executable
     if (boundaryEvent.cancelActivity()) {
       interruptingIds.add(boundaryEvent.getId());
     }
+  }
+
+  public void setLoopCharacteristics(LoopCharacteristics loopCharacteristics) {
+    this.loopCharacteristics = loopCharacteristics;
+  }
+
+  public LoopCharacteristics getLoopCharacteristics() {
+    return loopCharacteristics;
+  }
+
+  public boolean hasLoopCharacteristics() {
+    return loopCharacteristics != null;
   }
 
   @Override
