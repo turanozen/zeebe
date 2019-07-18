@@ -42,31 +42,13 @@ public class ZeebeClientBuilderImpl implements ZeebeClientBuilder, ZeebeClientCo
   }
 
   @Override
-  public ZeebeClientBuilder brokerContactPoint(final String contactPoint) {
-    this.brokerContactPoint = contactPoint;
-    return this;
-  }
-
-  @Override
-  public int getDefaultJobWorkerMaxJobsActive() {
-    return jobWorkerMaxJobsActive;
-  }
-
-  @Override
-  public ZeebeClientBuilder defaultJobWorkerMaxJobsActive(final int maxJobsActive) {
-    this.jobWorkerMaxJobsActive = maxJobsActive;
-    return this;
-  }
-
-  @Override
   public int getNumJobWorkerExecutionThreads() {
     return numJobWorkerExecutionThreads;
   }
 
   @Override
-  public ZeebeClientBuilder numJobWorkerExecutionThreads(final int numSubscriptionThreads) {
-    this.numJobWorkerExecutionThreads = numSubscriptionThreads;
-    return this;
+  public int getDefaultJobWorkerMaxJobsActive() {
+    return jobWorkerMaxJobsActive;
   }
 
   @Override
@@ -85,48 +67,13 @@ public class ZeebeClientBuilderImpl implements ZeebeClientBuilder, ZeebeClientCo
   }
 
   @Override
-  public ZeebeClientBuilder defaultJobWorkerName(final String workerName) {
-    this.defaultJobWorkerName = workerName;
-    return this;
-  }
-
-  @Override
-  public ZeebeClientBuilder defaultJobTimeout(final Duration timeout) {
-    this.defaultJobTimeout = timeout;
-    return this;
-  }
-
-  @Override
-  public ZeebeClientBuilder defaultJobPollInterval(Duration pollInterval) {
-    defaultJobPollInterval = pollInterval;
-    return this;
-  }
-
-  @Override
-  public ZeebeClientBuilder defaultMessageTimeToLive(final Duration timeToLive) {
-    this.defaultMessageTimeToLive = timeToLive;
-    return this;
-  }
-
-  @Override
   public Duration getDefaultMessageTimeToLive() {
     return defaultMessageTimeToLive;
   }
 
   @Override
-  public ZeebeClientBuilder defaultRequestTimeout(Duration requestTimeout) {
-    this.defaultRequestTimeout = requestTimeout;
-    return this;
-  }
-
-  @Override
   public Duration getDefaultRequestTimeout() {
     return defaultRequestTimeout;
-  }
-
-  @Override
-  public ZeebeClient build() {
-    return new ZeebeClientImpl(this);
   }
 
   public ZeebeClientBuilder withProperties(final Properties properties) {
@@ -166,6 +113,59 @@ public class ZeebeClientBuilderImpl implements ZeebeClientBuilder, ZeebeClientCo
     }
 
     return this;
+  }
+
+  @Override
+  public ZeebeClientBuilder brokerContactPoint(final String contactPoint) {
+    this.brokerContactPoint = contactPoint;
+    return this;
+  }
+
+  @Override
+  public ZeebeClientBuilder defaultJobWorkerMaxJobsActive(final int maxJobsActive) {
+    this.jobWorkerMaxJobsActive = maxJobsActive;
+    return this;
+  }
+
+  @Override
+  public ZeebeClientBuilder numJobWorkerExecutionThreads(final int numSubscriptionThreads) {
+    this.numJobWorkerExecutionThreads = numSubscriptionThreads;
+    return this;
+  }
+
+  @Override
+  public ZeebeClientBuilder defaultJobWorkerName(final String workerName) {
+    this.defaultJobWorkerName = workerName;
+    return this;
+  }
+
+  @Override
+  public ZeebeClientBuilder defaultJobTimeout(final Duration timeout) {
+    this.defaultJobTimeout = timeout;
+    return this;
+  }
+
+  @Override
+  public ZeebeClientBuilder defaultJobPollInterval(Duration pollInterval) {
+    defaultJobPollInterval = pollInterval;
+    return this;
+  }
+
+  @Override
+  public ZeebeClientBuilder defaultMessageTimeToLive(final Duration timeToLive) {
+    this.defaultMessageTimeToLive = timeToLive;
+    return this;
+  }
+
+  @Override
+  public ZeebeClientBuilder defaultRequestTimeout(Duration requestTimeout) {
+    this.defaultRequestTimeout = requestTimeout;
+    return this;
+  }
+
+  @Override
+  public ZeebeClient build() {
+    return new ZeebeClientImpl(this);
   }
 
   @Override

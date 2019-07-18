@@ -171,6 +171,14 @@ public class ClusteringRule extends ExternalResource {
     }
   }
 
+  @Override
+  protected void after() {
+    closeables.after();
+    brokerBases.clear();
+    brokerCfgs.clear();
+    brokers.clear();
+  }
+
   public Broker getBroker(final int nodeId) {
     return brokers.computeIfAbsent(nodeId, this::createBroker);
   }
@@ -284,14 +292,6 @@ public class ClusteringRule extends ExternalResource {
         ZeebeClient.newClientBuilder().brokerContactPoint(contactPoint).build();
     closeables.manage(client);
     return client;
-  }
-
-  @Override
-  protected void after() {
-    closeables.after();
-    brokerBases.clear();
-    brokerCfgs.clear();
-    brokers.clear();
   }
 
   private void waitUntilBrokersInTopology() {

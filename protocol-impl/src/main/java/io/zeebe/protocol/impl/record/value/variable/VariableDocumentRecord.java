@@ -66,14 +66,14 @@ public class VariableDocumentRecord extends UnifiedRecordValue
     return MsgPackConverter.convertToMap(variablesProperty.getValue());
   }
 
-  @JsonIgnore
-  public DirectBuffer getVariablesBuffer() {
-    return variablesProperty.getValue();
-  }
-
   public VariableDocumentRecord setVariables(DirectBuffer variables) {
     variablesProperty.setValue(variables);
     return this;
+  }
+
+  @JsonIgnore
+  public DirectBuffer getVariablesBuffer() {
+    return variablesProperty.getValue();
   }
 
   @Override

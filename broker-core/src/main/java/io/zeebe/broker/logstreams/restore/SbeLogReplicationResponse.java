@@ -47,11 +47,62 @@ public class SbeLogReplicationResponse
   }
 
   @Override
+  public long getToPosition() {
+    return delegate.getToPosition();
+  }
+
+  @Override
+  public boolean hasMoreAvailable() {
+    return delegate.hasMoreAvailable();
+  }
+
+  @Override
+  public byte[] getSerializedEvents() {
+    return delegate.getSerializedEvents();
+  }
+
+  @Override
+  public boolean isValid() {
+    return delegate.isValid()
+        && getSerializedEventsLength() > 0
+        && delegate.getToPosition() != toPositionNullValue();
+  }
+
+  @Override
+  public String toString() {
+    return "SbeLogReplicationResponse{" + "delegate=" + delegate + "} " + super.toString();
+  }
+
+  public static byte[] serialize(LogReplicationResponse response) {
+    return new SbeLogReplicationResponse(response).toBytes();
+  }
+
+  private int getSerializedEventsLength() {
+    final byte[] serializedEvents = delegate.getSerializedEvents();
+    return serializedEvents != null ? serializedEvents.length : 0;
+  }
+
+  @Override
+  protected LogReplicationResponseEncoder getBodyEncoder() {
+    return encoder;
+  }
+
+  @Override
+  protected LogReplicationResponseDecoder getBodyDecoder() {
+    return decoder;
+  }
+
+  @Override
   public void reset() {
     super.reset();
     delegate.setToPosition(toPositionNullValue());
     delegate.setMoreAvailable(false);
     delegate.setSerializedEvents(new UnsafeBuffer(), 0, 0);
+  }
+
+  @Override
+  public int getLength() {
+    return super.getLength() + serializedEventsHeaderLength() + getSerializedEventsLength();
   }
 
   @Override
@@ -78,56 +129,5 @@ public class SbeLogReplicationResponse
     } else {
       encoder.putSerializedEvents(new UnsafeBuffer(), 0, 0);
     }
-  }
-
-  @Override
-  public int getLength() {
-    return super.getLength() + serializedEventsHeaderLength() + getSerializedEventsLength();
-  }
-
-  @Override
-  public boolean isValid() {
-    return delegate.isValid()
-        && getSerializedEventsLength() > 0
-        && delegate.getToPosition() != toPositionNullValue();
-  }
-
-  @Override
-  public long getToPosition() {
-    return delegate.getToPosition();
-  }
-
-  @Override
-  public boolean hasMoreAvailable() {
-    return delegate.hasMoreAvailable();
-  }
-
-  @Override
-  public byte[] getSerializedEvents() {
-    return delegate.getSerializedEvents();
-  }
-
-  @Override
-  public String toString() {
-    return "SbeLogReplicationResponse{" + "delegate=" + delegate + "} " + super.toString();
-  }
-
-  public static byte[] serialize(LogReplicationResponse response) {
-    return new SbeLogReplicationResponse(response).toBytes();
-  }
-
-  private int getSerializedEventsLength() {
-    final byte[] serializedEvents = delegate.getSerializedEvents();
-    return serializedEvents != null ? serializedEvents.length : 0;
-  }
-
-  @Override
-  protected LogReplicationResponseEncoder getBodyEncoder() {
-    return encoder;
-  }
-
-  @Override
-  protected LogReplicationResponseDecoder getBodyDecoder() {
-    return decoder;
   }
 }

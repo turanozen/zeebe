@@ -40,10 +40,9 @@ import org.slf4j.Logger;
 
 public class DeploymentDistributorImpl implements DeploymentDistributor {
 
-  private static final Logger LOG = Loggers.WORKFLOW_REPOSITORY_LOGGER;
   public static final Duration PUSH_REQUEST_TIMEOUT = Duration.ofSeconds(15);
   public static final Duration RETRY_DELAY = Duration.ofMillis(100);
-
+  private static final Logger LOG = Loggers.WORKFLOW_REPOSITORY_LOGGER;
   private final PushDeploymentRequest pushDeploymentRequest = new PushDeploymentRequest();
   private final PushDeploymentResponse pushDeploymentResponse = new PushDeploymentResponse();
 

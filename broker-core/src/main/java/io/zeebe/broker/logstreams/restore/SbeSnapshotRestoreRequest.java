@@ -46,6 +46,39 @@ public class SbeSnapshotRestoreRequest
   }
 
   @Override
+  public long getSnapshotId() {
+    return delegate.getSnapshotId();
+  }
+
+  private void setSnapshotId(long snaphshotId) {
+    delegate.setSnapshotId(snaphshotId);
+  }
+
+  @Override
+  public int getChunkIdx() {
+    return delegate.getChunkIdx();
+  }
+
+  private void setChunkIdx(int chunkIdx) {
+    delegate.setChunkIdx(chunkIdx);
+  }
+
+  @Override
+  public String toString() {
+    return "SbeSnapshotRestoreRequest{" + "delegate=" + delegate + "} " + super.toString();
+  }
+
+  @Override
+  protected SnapshotRestoreRequestEncoder getBodyEncoder() {
+    return encoder;
+  }
+
+  @Override
+  protected SnapshotRestoreRequestDecoder getBodyDecoder() {
+    return decoder;
+  }
+
+  @Override
   public void reset() {
     super.reset();
     setSnapshotId(snapshotIdNullValue());
@@ -64,39 +97,6 @@ public class SbeSnapshotRestoreRequest
     super.write(buffer, offset);
     encoder.snapshotId(getSnapshotId());
     encoder.chunkIdx(getChunkIdx());
-  }
-
-  private void setChunkIdx(int chunkIdx) {
-    delegate.setChunkIdx(chunkIdx);
-  }
-
-  private void setSnapshotId(long snaphshotId) {
-    delegate.setSnapshotId(snaphshotId);
-  }
-
-  @Override
-  public long getSnapshotId() {
-    return delegate.getSnapshotId();
-  }
-
-  @Override
-  public int getChunkIdx() {
-    return delegate.getChunkIdx();
-  }
-
-  @Override
-  public String toString() {
-    return "SbeSnapshotRestoreRequest{" + "delegate=" + delegate + "} " + super.toString();
-  }
-
-  @Override
-  protected SnapshotRestoreRequestEncoder getBodyEncoder() {
-    return encoder;
-  }
-
-  @Override
-  protected SnapshotRestoreRequestDecoder getBodyDecoder() {
-    return decoder;
   }
 
   public static byte[] serialize(SnapshotRestoreRequest request) {

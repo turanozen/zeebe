@@ -22,13 +22,11 @@ public class SnapshotChunkImpl
 
   private final SnapshotChunkEncoder encoder = new SnapshotChunkEncoder();
   private final SnapshotChunkDecoder decoder = new SnapshotChunkDecoder();
-
+  private final DirectBuffer content = new UnsafeBuffer(0, 0);
   private long snapshotPosition;
   private int totalCount;
   private String chunkName;
   private long checksum;
-
-  private final DirectBuffer content = new UnsafeBuffer(0, 0);
 
   public SnapshotChunkImpl() {}
 
@@ -38,15 +36,6 @@ public class SnapshotChunkImpl
     chunkName = chunk.getChunkName();
     checksum = chunk.getChecksum();
     content.wrap(chunk.getContent());
-  }
-
-  @Override
-  public int getLength() {
-    return super.getLength()
-        + SnapshotChunkEncoder.chunkNameHeaderLength()
-        + chunkName.length()
-        + SnapshotChunkEncoder.contentHeaderLength()
-        + content.capacity();
   }
 
   @Override
@@ -60,15 +49,24 @@ public class SnapshotChunkImpl
   }
 
   @Override
-  public void write(MutableDirectBuffer buffer, int offset) {
-    super.write(buffer, offset);
+  public void reset() {
+    super.reset();
 
-    encoder
-        .snapshotPosition(snapshotPosition)
-        .totalCount(totalCount)
-        .chunkName(chunkName)
-        .checksum(checksum)
-        .putContent(content, 0, content.capacity());
+    snapshotPosition = SnapshotChunkDecoder.snapshotPositionNullValue();
+    totalCount = SnapshotChunkDecoder.totalCountNullValue();
+    checksum = SnapshotChunkDecoder.checksumNullValue();
+
+    chunkName = "";
+    content.wrap(0, 0);
+  }
+
+  @Override
+  public int getLength() {
+    return super.getLength()
+        + SnapshotChunkEncoder.chunkNameHeaderLength()
+        + chunkName.length()
+        + SnapshotChunkEncoder.contentHeaderLength()
+        + content.capacity();
   }
 
   @Override
@@ -83,15 +81,15 @@ public class SnapshotChunkImpl
   }
 
   @Override
-  public void reset() {
-    super.reset();
+  public void write(MutableDirectBuffer buffer, int offset) {
+    super.write(buffer, offset);
 
-    snapshotPosition = SnapshotChunkDecoder.snapshotPositionNullValue();
-    totalCount = SnapshotChunkDecoder.totalCountNullValue();
-    checksum = SnapshotChunkDecoder.checksumNullValue();
-
-    chunkName = "";
-    content.wrap(0, 0);
+    encoder
+        .snapshotPosition(snapshotPosition)
+        .totalCount(totalCount)
+        .chunkName(chunkName)
+        .checksum(checksum)
+        .putContent(content, 0, content.capacity());
   }
 
   @Override

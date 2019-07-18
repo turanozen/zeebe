@@ -21,10 +21,9 @@ public class PushDeploymentRequest
 
   private final PushDeploymentRequestEncoder bodyEncoder = new PushDeploymentRequestEncoder();
   private final PushDeploymentRequestDecoder bodyDecoder = new PushDeploymentRequestDecoder();
-
+  private final DirectBuffer deployment = new UnsafeBuffer(0, 0);
   private int partitionId = PushDeploymentRequestEncoder.partitionIdNullValue();
   private long deploymentKey = PushDeploymentRequestEncoder.deploymentKeyNullValue();
-  private final DirectBuffer deployment = new UnsafeBuffer(0, 0);
 
   public PushDeploymentRequest partitionId(final int partitionId) {
     this.partitionId = partitionId;
@@ -63,6 +62,21 @@ public class PushDeploymentRequest
     return bodyDecoder;
   }
 
+  public void reset() {
+    super.reset();
+
+    partitionId = PushDeploymentRequestEncoder.partitionIdNullValue();
+    deploymentKey = PushDeploymentRequestEncoder.deploymentKeyNullValue();
+    deployment.wrap(0, 0);
+  }
+
+  @Override
+  public int getLength() {
+    return super.getLength()
+        + PushDeploymentRequestEncoder.deploymentHeaderLength()
+        + deployment.capacity();
+  }
+
   @Override
   public void wrap(final DirectBuffer buffer, final int offset, final int length) {
     super.wrap(buffer, offset, length);
@@ -75,13 +89,6 @@ public class PushDeploymentRequest
   }
 
   @Override
-  public int getLength() {
-    return super.getLength()
-        + PushDeploymentRequestEncoder.deploymentHeaderLength()
-        + deployment.capacity();
-  }
-
-  @Override
   public void write(final MutableDirectBuffer buffer, final int offset) {
     super.write(buffer, offset);
 
@@ -89,13 +96,5 @@ public class PushDeploymentRequest
         .partitionId(partitionId)
         .deploymentKey(deploymentKey)
         .putDeployment(deployment, 0, deployment.capacity());
-  }
-
-  public void reset() {
-    super.reset();
-
-    partitionId = PushDeploymentRequestEncoder.partitionIdNullValue();
-    deploymentKey = PushDeploymentRequestEncoder.deploymentKeyNullValue();
-    deployment.wrap(0, 0);
   }
 }
