@@ -39,6 +39,14 @@ public class ActivityElementActivatingHandler<T extends ExecutableActivity>
 
   @Override
   protected boolean handleState(BpmnStepContext<T> context) {
+
+    if (context.getElement().hasLoopCharacteristics()) {
+      // if body then spawn instances
+      // else super.handleState(context)
+    } else {
+      // ...
+    }
+
     return super.handleState(context) && catchEventSubscriber.subscribeToEvents(context);
   }
 }

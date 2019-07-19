@@ -32,28 +32,29 @@ public class ActivityTransformer implements ModelElementTransformer<Activity> {
     final ExecutableActivity activity =
         workflow.getElementById(element.getId(), ExecutableActivity.class);
 
-    final io.zeebe.model.bpmn.instance.LoopCharacteristics elementLoopCharacteristics = element.getLoopCharacteristics();
+    final io.zeebe.model.bpmn.instance.LoopCharacteristics elementLoopCharacteristics =
+        element.getLoopCharacteristics();
     if (elementLoopCharacteristics != null
-      && elementLoopCharacteristics instanceof MultiInstanceLoopCharacteristics) {
+        && elementLoopCharacteristics instanceof MultiInstanceLoopCharacteristics) {
 
       final boolean isSequential =
-        ((MultiInstanceLoopCharacteristics) elementLoopCharacteristics).isSequential();
+          ((MultiInstanceLoopCharacteristics) elementLoopCharacteristics).isSequential();
 
       final ZeebeLoopCharacteristics loopCharacteristics =
-        elementLoopCharacteristics.getSingleExtensionElement(ZeebeLoopCharacteristics.class);
+          elementLoopCharacteristics.getSingleExtensionElement(ZeebeLoopCharacteristics.class);
 
       // TODO (saig0): validate input collection expression
       final JsonPathQuery inputCollectionQuery =
-        context.getJsonPathQueryCompiler().compile(loopCharacteristics.getInputCollection());
+          context.getJsonPathQueryCompiler().compile(loopCharacteristics.getInputCollection());
 
       // TODO (saig0): validate input element expression
       // TODO (saig0): extract JsonPath creation
       // merging algorithm expect a root object $
       final JsonPathPointer inputElementPath =
-        new JsonPathPointer(("$." + loopCharacteristics.getInputElement()).split("\\."));
+          new JsonPathPointer(("$." + loopCharacteristics.getInputElement()).split("\\."));
 
       final LoopCharacteristics activityLoopCharacteristics =
-        new LoopCharacteristics(isSequential, inputCollectionQuery, inputElementPath);
+          new LoopCharacteristics(isSequential, inputCollectionQuery, inputElementPath);
       activity.setLoopCharacteristics(activityLoopCharacteristics);
     }
 

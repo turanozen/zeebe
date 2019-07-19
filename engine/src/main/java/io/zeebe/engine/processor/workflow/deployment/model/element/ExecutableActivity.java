@@ -7,11 +7,10 @@
  */
 package io.zeebe.engine.processor.workflow.deployment.model.element;
 
-import org.agrona.DirectBuffer;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.agrona.DirectBuffer;
 
 public class ExecutableActivity extends ExecutableFlowNode implements ExecutableCatchEventSupplier {
   private final List<ExecutableBoundaryEvent> boundaryEvents = new ArrayList<>();
