@@ -42,5 +42,4 @@ public class ZeebeConstants {
   public static final String ELEMENT_TASK_HEADERS = "taskHeaders";
 
   public static final String ELEMENT_LOOP_CHARACTERISTICS = "loopCharacteristics";
-
 }

@@ -20,7 +20,8 @@ import io.zeebe.model.bpmn.instance.zeebe.ZeebeLoopCharacteristics;
 import org.camunda.bpm.model.xml.validation.ModelElementValidator;
 import org.camunda.bpm.model.xml.validation.ValidationResultCollector;
 
-public class ZeebeLoopCharacteristicsValidator implements ModelElementValidator<ZeebeLoopCharacteristics> {
+public class ZeebeLoopCharacteristicsValidator
+    implements ModelElementValidator<ZeebeLoopCharacteristics> {
 
   @Override
   public Class<ZeebeLoopCharacteristics> getElementType() {
@@ -29,14 +30,16 @@ public class ZeebeLoopCharacteristicsValidator implements ModelElementValidator<
 
   @Override
   public void validate(
-    ZeebeLoopCharacteristics element, ValidationResultCollector validationResultCollector) {
+      ZeebeLoopCharacteristics element, ValidationResultCollector validationResultCollector) {
 
     final String inputCollection = element.getInputCollection();
 
     if (inputCollection == null || inputCollection.isEmpty()) {
-      validationResultCollector.addError(0, String.format(
-        "Attribute '%s' must be present and not empty",
-        ZeebeConstants.ATTRIBUTE_INPUT_COLLECTION));
+      validationResultCollector.addError(
+          0,
+          String.format(
+              "Attribute '%s' must be present and not empty",
+              ZeebeConstants.ATTRIBUTE_INPUT_COLLECTION));
     }
   }
 }

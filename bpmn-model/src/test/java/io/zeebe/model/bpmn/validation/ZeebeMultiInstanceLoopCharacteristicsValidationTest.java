@@ -15,37 +15,40 @@
  */
 package io.zeebe.model.bpmn.validation;
 
+import static io.zeebe.model.bpmn.validation.ExpectedValidationResult.expect;
+import static java.util.Collections.singletonList;
+
 import io.zeebe.model.bpmn.Bpmn;
 import io.zeebe.model.bpmn.instance.MultiInstanceLoopCharacteristics;
 import io.zeebe.model.bpmn.instance.zeebe.ZeebeLoopCharacteristics;
 import org.junit.runners.Parameterized.Parameters;
 
-import static io.zeebe.model.bpmn.validation.ExpectedValidationResult.expect;
-import static java.util.Collections.singletonList;
-
-public class ZeebeMultiInstanceLoopCharacteristicsValidationTest extends AbstractZeebeValidationTest {
+public class ZeebeMultiInstanceLoopCharacteristicsValidationTest
+    extends AbstractZeebeValidationTest {
 
   @Parameters(name = "{index}: {1}")
   public static Object[][] parameters() {
-    return new Object[][]{
+    return new Object[][] {
       {
         Bpmn.createExecutableProcess("process")
-          .startEvent()
-          .serviceTask("task", t -> t
-            .zeebeTaskType("test")
-            .multiInstance())
-          .done(),
+            .startEvent()
+            .serviceTask("task", t -> t.zeebeTaskType("test").multiInstance())
+            .done(),
         singletonList(
-          expect(MultiInstanceLoopCharacteristics.class, "Must have exactly one 'zeebe:loopCharacteristics' extension element"))
+            expect(
+                MultiInstanceLoopCharacteristics.class,
+                "Must have exactly one 'zeebe:loopCharacteristics' extension element"))
       },
       {
         Bpmn.createExecutableProcess("process")
-          .startEvent()
-          .serviceTask("task", t -> t
-            .zeebeTaskType("test")
-            .multiInstance(b -> b.zeebeInputCollection("")))
-          .done(),
-        singletonList(expect(ZeebeLoopCharacteristics.class, "Attribute 'inputCollection' must be present and not empty"))
+            .startEvent()
+            .serviceTask(
+                "task", t -> t.zeebeTaskType("test").multiInstance(b -> b.zeebeInputCollection("")))
+            .done(),
+        singletonList(
+            expect(
+                ZeebeLoopCharacteristics.class,
+                "Attribute 'inputCollection' must be present and not empty"))
       },
     };
   }

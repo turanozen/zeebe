@@ -16,12 +16,14 @@
 
 package io.zeebe.model.bpmn;
 
+import static io.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN20_NS;
+
 import io.zeebe.model.bpmn.builder.ProcessBuilder;
 import io.zeebe.model.bpmn.impl.BpmnImpl;
 import io.zeebe.model.bpmn.impl.BpmnParser;
+import io.zeebe.model.bpmn.impl.instance.*;
 import io.zeebe.model.bpmn.impl.instance.ExtensionImpl;
 import io.zeebe.model.bpmn.impl.instance.ProcessImpl;
-import io.zeebe.model.bpmn.impl.instance.*;
 import io.zeebe.model.bpmn.impl.instance.bpmndi.*;
 import io.zeebe.model.bpmn.impl.instance.dc.BoundsImpl;
 import io.zeebe.model.bpmn.impl.instance.dc.FontImpl;
@@ -32,13 +34,10 @@ import io.zeebe.model.bpmn.instance.Definitions;
 import io.zeebe.model.bpmn.instance.Process;
 import io.zeebe.model.bpmn.instance.bpmndi.BpmnDiagram;
 import io.zeebe.model.bpmn.instance.bpmndi.BpmnPlane;
+import java.io.*;
 import org.camunda.bpm.model.xml.*;
 import org.camunda.bpm.model.xml.impl.instance.ModelElementInstanceImpl;
 import org.camunda.bpm.model.xml.impl.util.IoUtil;
-
-import java.io.*;
-
-import static io.zeebe.model.bpmn.impl.BpmnModelConstants.BPMN20_NS;
 
 /**
  * Provides access to the camunda BPMN model api.

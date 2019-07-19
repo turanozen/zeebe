@@ -17,7 +17,6 @@ package io.zeebe.model.bpmn.instance.zeebe;
 
 import io.zeebe.model.bpmn.impl.BpmnModelConstants;
 import io.zeebe.model.bpmn.instance.BpmnModelElementInstanceTest;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -37,7 +36,7 @@ public class ZeebeLoopCharacteristicsTest extends BpmnModelElementInstanceTest {
   @Override
   public Collection<AttributeAssumption> getAttributesAssumptions() {
     return Arrays.asList(
-      new AttributeAssumption(BpmnModelConstants.ZEEBE_NS, "inputCollection", false, true),
-      new AttributeAssumption(BpmnModelConstants.ZEEBE_NS, "inputElement", false, false));
+        new AttributeAssumption(BpmnModelConstants.ZEEBE_NS, "inputCollection", false, true),
+        new AttributeAssumption(BpmnModelConstants.ZEEBE_NS, "inputElement", false, false));
   }
 }

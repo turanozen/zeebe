@@ -15,10 +15,9 @@
  */
 package io.zeebe.model.bpmn.validation.zeebe;
 
-import org.camunda.bpm.model.xml.validation.ModelElementValidator;
-
 import java.util.ArrayList;
 import java.util.Collection;
+import org.camunda.bpm.model.xml.validation.ModelElementValidator;
 
 public class ZeebeDesignTimeValidators {
 

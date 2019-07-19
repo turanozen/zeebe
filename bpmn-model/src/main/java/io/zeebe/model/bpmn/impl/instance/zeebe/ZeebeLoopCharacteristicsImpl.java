@@ -1,3 +1,18 @@
+/*
+ * Copyright © 2017 camunda services GmbH (info@camunda.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.zeebe.model.bpmn.impl.instance.zeebe;
 
 import io.zeebe.model.bpmn.impl.BpmnModelConstants;
@@ -9,7 +24,8 @@ import org.camunda.bpm.model.xml.impl.instance.ModelTypeInstanceContext;
 import org.camunda.bpm.model.xml.type.ModelElementTypeBuilder;
 import org.camunda.bpm.model.xml.type.attribute.Attribute;
 
-public class ZeebeLoopCharacteristicsImpl extends BpmnModelElementInstanceImpl implements ZeebeLoopCharacteristics {
+public class ZeebeLoopCharacteristicsImpl extends BpmnModelElementInstanceImpl
+    implements ZeebeLoopCharacteristics {
 
   private static Attribute<String> inputCollectionAttribute;
   private static Attribute<String> inputElementAttribute;
@@ -20,23 +36,23 @@ public class ZeebeLoopCharacteristicsImpl extends BpmnModelElementInstanceImpl i
 
   public static void registerType(ModelBuilder modelBuilder) {
     final ModelElementTypeBuilder typeBuilder =
-      modelBuilder
-        .defineType(ZeebeLoopCharacteristics.class, ZeebeConstants.ELEMENT_LOOP_CHARACTERISTICS)
-        .namespaceUri(BpmnModelConstants.ZEEBE_NS)
-        .instanceProvider(ZeebeLoopCharacteristicsImpl::new);
+        modelBuilder
+            .defineType(ZeebeLoopCharacteristics.class, ZeebeConstants.ELEMENT_LOOP_CHARACTERISTICS)
+            .namespaceUri(BpmnModelConstants.ZEEBE_NS)
+            .instanceProvider(ZeebeLoopCharacteristicsImpl::new);
 
     inputCollectionAttribute =
-      typeBuilder
-        .stringAttribute(ZeebeConstants.ATTRIBUTE_INPUT_COLLECTION)
-        .namespace(BpmnModelConstants.ZEEBE_NS)
-        .required()
-        .build();
+        typeBuilder
+            .stringAttribute(ZeebeConstants.ATTRIBUTE_INPUT_COLLECTION)
+            .namespace(BpmnModelConstants.ZEEBE_NS)
+            .required()
+            .build();
 
     inputElementAttribute =
-      typeBuilder
-        .stringAttribute(ZeebeConstants.ATTRIBUTE_INPUT_ELEMENT)
-        .namespace(BpmnModelConstants.ZEEBE_NS)
-        .build();
+        typeBuilder
+            .stringAttribute(ZeebeConstants.ATTRIBUTE_INPUT_ELEMENT)
+            .namespace(BpmnModelConstants.ZEEBE_NS)
+            .build();
 
     typeBuilder.build();
   }

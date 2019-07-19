@@ -22,7 +22,8 @@ import io.zeebe.model.bpmn.instance.zeebe.ZeebeLoopCharacteristics;
 import org.camunda.bpm.model.xml.validation.ModelElementValidator;
 import org.camunda.bpm.model.xml.validation.ValidationResultCollector;
 
-public class MultiInstanceLoopCharacteristicsValidator implements ModelElementValidator<MultiInstanceLoopCharacteristics> {
+public class MultiInstanceLoopCharacteristicsValidator
+    implements ModelElementValidator<MultiInstanceLoopCharacteristics> {
 
   @Override
   public Class<MultiInstanceLoopCharacteristics> getElementType() {
@@ -30,14 +31,18 @@ public class MultiInstanceLoopCharacteristicsValidator implements ModelElementVa
   }
 
   @Override
-  public void validate(MultiInstanceLoopCharacteristics element, ValidationResultCollector validationResultCollector) {
+  public void validate(
+      MultiInstanceLoopCharacteristics element,
+      ValidationResultCollector validationResultCollector) {
     final ExtensionElements extensionElements = element.getExtensionElements();
 
     if (extensionElements == null
-      || extensionElements.getChildElementsByType(ZeebeLoopCharacteristics.class).size() != 1) {
-      validationResultCollector.addError(0, String.format(
-        "Must have exactly one 'zeebe:%s' extension element",
-        ZeebeConstants.ELEMENT_LOOP_CHARACTERISTICS));
+        || extensionElements.getChildElementsByType(ZeebeLoopCharacteristics.class).size() != 1) {
+      validationResultCollector.addError(
+          0,
+          String.format(
+              "Must have exactly one 'zeebe:%s' extension element",
+              ZeebeConstants.ELEMENT_LOOP_CHARACTERISTICS));
     }
   }
 }
