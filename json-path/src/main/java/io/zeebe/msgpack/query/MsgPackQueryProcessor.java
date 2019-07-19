@@ -103,5 +103,13 @@ public class MsgPackQueryProcessor {
       longResultBuffer.wrap(converted.getBytes());
       return longResultBuffer;
     }
+
+    public boolean isArray() {
+      return token.getType() == MsgPackType.ARRAY;
+    }
+
+    public MsgPackToken getToken() {
+      return token;
+    }
   }
 }

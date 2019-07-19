@@ -12,9 +12,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.zeebe.engine.util.EngineRule;
 import io.zeebe.model.bpmn.Bpmn;
 import io.zeebe.model.bpmn.BpmnModelInstance;
+import io.zeebe.protocol.record.intent.JobIntent;
+import io.zeebe.protocol.record.intent.WorkflowInstanceIntent;
 import io.zeebe.test.util.record.RecordingExporter;
 import io.zeebe.test.util.record.RecordingExporterTestWatcher;
-import io.zeebe.test.util.record.WorkflowInstanceRecordStream;
 import java.util.Arrays;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -52,12 +53,17 @@ public class MultiInstanceTest {
             .withVariable("items", Arrays.asList(1, 2, 3))
             .create();
 
-    final WorkflowInstanceRecordStream stream =
-        RecordingExporter.workflowInstanceRecords()
-            .withWorkflowInstanceKey(workflowInstanceKey)
-            .withElementId("task")
-            .limitToWorkflowInstanceCompleted();
+    assertThat(
+            RecordingExporter.workflowInstanceRecords(WorkflowInstanceIntent.ELEMENT_ACTIVATED)
+                .withWorkflowInstanceKey(workflowInstanceKey)
+                .withElementId("task")
+                .limit(4))
+        .hasSize(4);
 
-    assertThat(stream).hasSize(8);
+    assertThat(
+            RecordingExporter.jobRecords(JobIntent.CREATED)
+                .withWorkflowInstanceKey(workflowInstanceKey)
+                .limit(3))
+        .hasSize(3);
   }
 }
