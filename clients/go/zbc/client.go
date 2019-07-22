@@ -16,90 +16,141 @@
 package zbc
 
 import (
-	"time"
+    "crypto/x509"
+    "encoding/pem"
+    "errors"
+    "fmt"
+    "google.golang.org/grpc/credentials"
+    "io/ioutil"
+    "time"
 
-	"github.com/zeebe-io/zeebe/clients/go/commands"
-	"github.com/zeebe-io/zeebe/clients/go/pb"
-	"github.com/zeebe-io/zeebe/clients/go/worker"
-	"google.golang.org/grpc"
+    "github.com/zeebe-io/zeebe/clients/go/commands"
+    "github.com/zeebe-io/zeebe/clients/go/pb"
+    "github.com/zeebe-io/zeebe/clients/go/worker"
+    "google.golang.org/grpc"
 )
 
 const DefaultRequestTimeout = 15 * time.Second
 
 type ZBClientImpl struct {
-	gateway        pb.GatewayClient
-	requestTimeout time.Duration
-	connection     *grpc.ClientConn
+    gateway        pb.GatewayClient
+    requestTimeout time.Duration
+    connection     *grpc.ClientConn
+}
+
+type ZBClientConfig struct {
+    GatewayAddress    string
+    TlsEnabled        bool
+    CaCertificatePath string
 }
 
 func (client *ZBClientImpl) NewTopologyCommand() *commands.TopologyCommand {
-	return commands.NewTopologyCommand(client.gateway, client.requestTimeout)
+    return commands.NewTopologyCommand(client.gateway, client.requestTimeout)
 }
 
 func (client *ZBClientImpl) NewDeployWorkflowCommand() *commands.DeployCommand {
-	return commands.NewDeployCommand(client.gateway, client.requestTimeout)
+    return commands.NewDeployCommand(client.gateway, client.requestTimeout)
 }
 
 func (client *ZBClientImpl) NewPublishMessageCommand() commands.PublishMessageCommandStep1 {
-	return commands.NewPublishMessageCommand(client.gateway, client.requestTimeout)
+    return commands.NewPublishMessageCommand(client.gateway, client.requestTimeout)
 }
 
 func (client *ZBClientImpl) NewResolveIncidentCommand() commands.ResolveIncidentCommandStep1 {
-	return commands.NewResolveIncidentCommand(client.gateway, client.requestTimeout)
+    return commands.NewResolveIncidentCommand(client.gateway, client.requestTimeout)
 }
 
 func (client *ZBClientImpl) NewCreateInstanceCommand() commands.CreateInstanceCommandStep1 {
-	return commands.NewCreateInstanceCommand(client.gateway, client.requestTimeout)
+    return commands.NewCreateInstanceCommand(client.gateway, client.requestTimeout)
 }
 
 func (client *ZBClientImpl) NewCancelInstanceCommand() commands.CancelInstanceStep1 {
-	return commands.NewCancelInstanceCommand(client.gateway, client.requestTimeout)
+    return commands.NewCancelInstanceCommand(client.gateway, client.requestTimeout)
 }
 
 func (client *ZBClientImpl) NewCompleteJobCommand() commands.CompleteJobCommandStep1 {
-	return commands.NewCompleteJobCommand(client.gateway, client.requestTimeout)
+    return commands.NewCompleteJobCommand(client.gateway, client.requestTimeout)
 }
 
 func (client *ZBClientImpl) NewFailJobCommand() commands.FailJobCommandStep1 {
-	return commands.NewFailJobCommand(client.gateway, client.requestTimeout)
+    return commands.NewFailJobCommand(client.gateway, client.requestTimeout)
 }
 
 func (client *ZBClientImpl) NewUpdateJobRetriesCommand() commands.UpdateJobRetriesCommandStep1 {
-	return commands.NewUpdateJobRetriesCommand(client.gateway, client.requestTimeout)
+    return commands.NewUpdateJobRetriesCommand(client.gateway, client.requestTimeout)
 }
 
 func (client *ZBClientImpl) NewSetVariablesCommand() commands.SetVariablesCommandStep1 {
-	return commands.NewSetVariablesCommand(client.gateway, client.requestTimeout)
+    return commands.NewSetVariablesCommand(client.gateway, client.requestTimeout)
 }
 
 func (client *ZBClientImpl) NewActivateJobsCommand() commands.ActivateJobsCommandStep1 {
-	return commands.NewActivateJobsCommand(client.gateway, client.requestTimeout)
+    return commands.NewActivateJobsCommand(client.gateway, client.requestTimeout)
 }
 
 func (client *ZBClientImpl) NewJobWorker() worker.JobWorkerBuilderStep1 {
-	return worker.NewJobWorkerBuilder(client.gateway, client, client.requestTimeout)
+    return worker.NewJobWorkerBuilder(client.gateway, client, client.requestTimeout)
 }
 
 func (client *ZBClientImpl) SetRequestTimeout(requestTimeout time.Duration) ZBClient {
-	client.requestTimeout = requestTimeout
-	return client
+    client.requestTimeout = requestTimeout
+    return client
 }
 
 func (client *ZBClientImpl) Close() error {
-	return client.connection.Close()
+    return client.connection.Close()
 }
 
-func NewZBClient(gatewayAddress string) (ZBClient, error) {
-	var opts []grpc.DialOption
-	opts = append(opts, grpc.WithInsecure())
+func NewZBClient(config *ZBClientConfig) (ZBClient, error) {
+    var opts []grpc.DialOption
 
-	conn, err := grpc.Dial(gatewayAddress, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &ZBClientImpl{
-		gateway:        pb.NewGatewayClient(conn),
-		requestTimeout: DefaultRequestTimeout,
-		connection:     conn,
-	}, nil
+    if config.TlsEnabled {
+        err := validateCertificatePath(config.CaCertificatePath)
+        if err != nil {
+            return nil, err
+        }
+
+        creds, err := credentials.NewClientTLSFromFile(config.CaCertificatePath, "")
+        if err != nil {
+            return nil, err
+        }
+
+        opts = append(opts, grpc.WithTransportCredentials(creds))
+    } else {
+        opts = append(opts, grpc.WithInsecure())
+    }
+
+    conn, err := grpc.Dial(config.GatewayAddress, opts...)
+    if err != nil {
+        return nil, err
+    }
+
+    return &ZBClientImpl{
+        gateway:        pb.NewGatewayClient(conn),
+        requestTimeout: DefaultRequestTimeout,
+        connection:     conn,
+    }, nil
+}
+
+func validateCertificatePath(certificatePath string) error {
+    if certificatePath == "" {
+        return errors.New("expected path to file type to be non-empty but got empty string instead")
+    }
+    certBytes, err := ioutil.ReadFile(certificatePath)
+    if err != nil {
+        return err
+    }
+
+    block, _ := pem.Decode(certBytes)
+
+    if block.Type != "CERTIFICATE" {
+        return errors.New(fmt.Sprintf("expected CA certificate to be of type 'CERTIFICATE' but got '%s' instead", block.Type))
+    }
+
+    _, err = x509.ParseCertificate(block.Bytes)
+    if err != nil {
+        return err
+    }
+
+    return nil
 }
